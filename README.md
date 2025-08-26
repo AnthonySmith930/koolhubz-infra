@@ -1,6 +1,6 @@
-# Welcome to your CDK TypeScript project
+# KoolHubz Infrastructure using AWS CDK
 
-This is a blank project for CDK development with TypeScript.
+This repo is for setting up and deploying the code that manages KoolHubz's backend infrastructure in our AWS account.
 
 The `cdk.json` file tells the CDK Toolkit how to execute your app.
 
