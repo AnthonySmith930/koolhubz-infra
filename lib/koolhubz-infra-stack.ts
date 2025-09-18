@@ -17,8 +17,18 @@ export class KoolHubzStack extends cdk.Stack {
     })
 
     // Tag all resources
-    cdk.Tags.of(this).add('Project', 'KoolHubz');
-    cdk.Tags.of(this).add('Environment', props.stage);
-    cdk.Tags.of(this).add('Owner', 'Anthony');
+    const baseTags = {
+      'Project': 'KoolHubz',
+      'Environment': props.stage,
+      'Owner': 'Anthony', 
+      'CreatedBy': 'CDK',
+      'CostCenter': props.stage === 'prod' ? 'Production' : 'Development',
+      'Version': '1.0',
+      'DeployedAt': new Date().toISOString().split('T')[0] // YYYY-MM-DD
+    };
+
+    Object.entries(baseTags).forEach(([key, value]) => {
+      cdk.Tags.of(this).add(key, value);
+    });
   }
 }

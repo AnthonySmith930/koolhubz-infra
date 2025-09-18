@@ -1,4 +1,3 @@
-// lib/constructs/cognito-construct.ts
 import * as cdk from 'aws-cdk-lib';
 import * as cognito from 'aws-cdk-lib/aws-cognito';
 import { Construct } from 'constructs';
