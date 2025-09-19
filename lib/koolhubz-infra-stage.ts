@@ -13,9 +13,5 @@ export class KoolHubzStage extends cdk.Stage {
     new KoolHubzStack(this, 'KoolHubzStack', {
       stage: props.stageName,
     });
-
-    // Later stacks for prod env:
-    // new DatabaseStack(this, 'DatabaseStack', { stage: props.stageName });
-    // new ApiStack(this, 'ApiStack', { stage: props.stageName });
   }
 }

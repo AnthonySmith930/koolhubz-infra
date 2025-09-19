@@ -1,6 +1,7 @@
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { CognitoConstruct } from './constructs/cognito-construct';
+import { HubsTableConstruct } from './constructs/hubs-table-construct';
 
 interface KoolHubzStackProps extends cdk.StackProps {
   stage: string;
@@ -8,6 +9,7 @@ interface KoolHubzStackProps extends cdk.StackProps {
 
 export class KoolHubzStack extends cdk.Stack {
   public readonly cognito: CognitoConstruct
+  public readonly hubsTable: HubsTableConstruct
 
   constructor(scope: Construct, id: string, props: KoolHubzStackProps) {
     super(scope, id, props);
@@ -15,6 +17,10 @@ export class KoolHubzStack extends cdk.Stack {
     this.cognito = new CognitoConstruct(this, "Cognito", {
       stage: props.stage
     })
+
+    this.hubsTable = new HubsTableConstruct(this, "HubsTable", {
+      stage: props.stage
+    });
 
     // Tag all resources
     const baseTags = {
