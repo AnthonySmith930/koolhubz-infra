@@ -2,6 +2,8 @@ import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { CognitoConstruct } from './constructs/cognito-construct';
 import { HubsTableConstruct } from './constructs/hubs-table-construct';
+import { HubsLambdaConstruct } from './constructs/lambda/hubs-lambda-construct';
+import { AppSyncConstruct } from './constructs/appsync-construct';
 
 interface KoolHubzStackProps extends cdk.StackProps {
   stage: string;
@@ -10,6 +12,8 @@ interface KoolHubzStackProps extends cdk.StackProps {
 export class KoolHubzStack extends cdk.Stack {
   public readonly cognito: CognitoConstruct
   public readonly hubsTable: HubsTableConstruct
+  public readonly appSync: AppSyncConstruct
+  public readonly hubsLambda: HubsLambdaConstruct
 
   constructor(scope: Construct, id: string, props: KoolHubzStackProps) {
     super(scope, id, props);
@@ -20,6 +24,20 @@ export class KoolHubzStack extends cdk.Stack {
 
     this.hubsTable = new HubsTableConstruct(this, "HubsTable", {
       stage: props.stage
+    });
+
+    // Make sure this line exists and comes BEFORE the AppSync creation
+    this.hubsLambda = new HubsLambdaConstruct(this, "HubsLambda", {
+      stage: props.stage,
+      hubsTable: this.hubsTable.table
+    });
+
+    // GraphQL API
+    this.appSync = new AppSyncConstruct(this, "AppSync", {
+      stage: props.stage,
+      hubsTable: this.hubsTable.table,
+      userPool: this.cognito.userPool,
+      createHubFunction: this.hubsLambda.createHubFunction
     });
 
     // Tag all resources

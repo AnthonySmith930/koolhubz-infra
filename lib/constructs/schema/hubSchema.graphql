@@ -1,0 +1,65 @@
+type Hub {
+  hubId: ID!
+  name: String!
+  latitude: Float!
+  longitude: Float!
+  radius: Int! # in meters
+  hubType: HubType!
+  createdBy: ID!
+  createdAt: AWSDateTime!
+  description: String!
+  isActive: Boolean!
+  
+  # Will implement later:
+  # settings: HubSettings
+  # markers: [HubMarker]
+  # inviteCode: String
+  # qrCode: String
+  # polygon: String
+  # memberCount: Int
+}
+
+enum HubType {
+  PUBLIC
+  PRIVATE
+}
+
+input CreateHubInput {
+  userId: ID # Optional - for hybrid auth
+  name: String!
+  description: String!
+  latitude: Float!
+  longitude: Float!
+  radius: Int!
+  hubType: HubType!
+}
+
+# Root query type
+type Query {
+  # Placeholder for future queries
+  # getHub(hubId: ID!): Hub
+  
+  # Will implement later:
+  # getNearbyHubs(latitude: Float!, longitude: Float!, radiusKm: Float): [Hub]
+  # searchHubs(query: String!, latitude: Float, longitude: Float): [Hub]
+}
+
+# Root mutation type  
+type Mutation {
+  createHub(input: CreateHubInput!): Hub!
+  
+  # Will implement later:
+  # updateHub(hubId: ID!, input: UpdateHubInput!): Hub!
+  # deleteHub(hubId: ID!): Boolean!
+}
+
+# Root subscription type
+type Subscription {
+  # Will implement later:
+  # onHubCreated: Hub @aws_subscribe(mutations: ["createHub"])
+  # onHubUpdated(hubId: ID!): Hub @aws_subscribe(mutations: ["updateHub"])
+  # onHubDeleted: ID @aws_subscribe(mutations: ["deleteHub"])
+}
+
+# AWS-specific scalar types
+scalar AWSDateTime

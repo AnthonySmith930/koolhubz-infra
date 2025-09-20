@@ -2,6 +2,8 @@
   "compilerOptions": {
     "target": "ES2022",
     "module": "NodeNext",
+    "outDir": "./build",           // All JS files go to build/
+    "rootDir": "./",
     "moduleResolution": "NodeNext",
     "lib": [
       "es2022"
@@ -27,6 +29,9 @@
   },
   "exclude": [
     "node_modules",
-    "cdk.out"
+    "cdk.out",
+    "build",
+    "**/*.d.ts",
+    "**/*.js"
   ]
 }
