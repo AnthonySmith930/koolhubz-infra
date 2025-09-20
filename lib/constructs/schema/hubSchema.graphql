@@ -39,6 +39,15 @@ type Query {
   # Placeholder for future queries
   # getHub(hubId: ID!): Hub
   
+  # Get hubs near a specific location
+  getNearbyHubs(
+    latitude: Float!
+    longitude: Float!
+    radiusKm: Float = 3.0
+    limit: Int = 50
+    hubType: HubType
+  ): [Hub!]!
+
   # Will implement later:
   # getNearbyHubs(latitude: Float!, longitude: Float!, radiusKm: Float): [Hub]
   # searchHubs(query: String!, latitude: Float, longitude: Float): [Hub]

@@ -11,13 +11,15 @@ interface AppSyncConstructProps {
   hubsTable: dynamodb.Table;
   userPool: cognito.UserPool;
   createHubFunction: lambda.Function;
+  getNearbyHubsFunction: lambda.Function
 }
 
 export class AppSyncConstruct extends Construct {
   public readonly api: appsync.GraphqlApi;
   public readonly hubsDataSource: appsync.DynamoDbDataSource;
   public readonly createHubDataSource: appsync.LambdaDataSource;
-
+  public readonly getNearbyHubsDataSource: appsync.LambdaDataSource;
+  
   constructor(scope: Construct, id: string, props: AppSyncConstructProps) {
     super(scope, id);
 
@@ -26,7 +28,7 @@ export class AppSyncConstruct extends Construct {
       name: `KoolHubz-${props.stage}-API`,
       
       // Schema from external file
-      schema: appsync.SchemaFile.fromAsset(
+      definition: appsync.Definition.fromFile(
         path.join(__dirname, 'schema', 'hubSchema.graphql')
       ),
 
@@ -78,6 +80,16 @@ export class AppSyncConstruct extends Construct {
       {
         name: 'CreateHubLambda',
         description: 'Lambda data source for hub creation with geohash indexing'
+      }
+    );
+
+    // Create Lambda data source for GetNearbyHubs
+    this.getNearbyHubsDataSource = this.api.addLambdaDataSource(
+      'GetNearbyHubsDataSource',
+      props.getNearbyHubsFunction,
+      {
+        name: 'GetNearbyHubsLambda',
+        description: 'Lambda data source for geospatial hub queries'
       }
     );
 
@@ -141,6 +153,36 @@ export class AppSyncConstruct extends Construct {
       `),
       runtime: appsync.FunctionRuntime.JS_1_0_0
     });
+
+    new appsync.Resolver(this, 'GetNearbyHubsResolver', {
+      api: this.api,
+      typeName: 'Query',
+      fieldName: 'getNearbyHubs',
+      dataSource: this.getNearbyHubsDataSource,
+      code: appsync.Code.fromInline(`
+        import { util } from '@aws-appsync/utils';
+
+        export function request(ctx) {
+          return {
+            operation: 'Invoke',
+            payload: {
+              arguments: ctx.args,
+              fieldName: ctx.info.fieldName,
+              identity: ctx.identity,
+            }
+          };
+        }
+
+        export function response(ctx) {
+          if (ctx.error) {
+            util.error(ctx.error.message, ctx.error.type);
+          }
+          return ctx.result;
+        }
+    `),
+
+    runtime: appsync.FunctionRuntime.JS_1_0_0
+  });
 
     // TODO: Add more resolvers as we implement them
     // Query: getHub (will use DynamoDB data source for simple lookup)

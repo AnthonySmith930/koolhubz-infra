@@ -78,8 +78,8 @@ export const handler = async (event: AppSyncEvent): Promise<Hub> => {
     const hubId = uuidv4();
     const now = new Date().toISOString();
     
-    // Calculate geohash for location indexing (precision 6 ≈ 1.2km x 0.6km)
-    const geohash = geohashEncode(input.latitude, input.longitude, 6);
+    // Calculate geohash for location indexing
+    const geohash = geohashEncode(input.latitude, input.longitude, 5);
     
     console.log('Generated hubId:', hubId, 'geohash:', geohash);
 
