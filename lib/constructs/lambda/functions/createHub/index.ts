@@ -1,5 +1,7 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb';
+import { CreateHubEvent, CreateHubInput } from '../../../../types/createHubTypes';
+import { Hub } from '../../../../types/hub';
 
 // Initialize DynamoDB client
 const ddbClient = new DynamoDBClient({});
@@ -7,53 +9,10 @@ const docClient = DynamoDBDocumentClient.from(ddbClient);
 
 const HUBS_TABLE_NAME = process.env.HUBS_TABLE_NAME!;
 
-// Types
-interface CreateHubInput {
-  userId?: string; // Optional for hybrid auth
-  name: string;
-  description: string;
-  latitude: number;
-  longitude: number;
-  radius: number;
-  hubType: 'PUBLIC' | 'PRIVATE';
-}
-
-interface AppSyncEvent {
-  info: {
-    fieldName: string;
-    parentTypeName: string;
-  };
-  arguments: {
-    input: CreateHubInput;
-  };
-  identity?: {
-    sub: string; // Cognito user ID
-    username?: string;
-  };
-  request: {
-    headers: Record<string, string>;
-  };
-}
-
-interface Hub {
-  hubId: string;
-  name: string;
-  description: string;
-  latitude: number;
-  longitude: number;
-  radius: number;
-  hubType: 'PUBLIC' | 'PRIVATE';
-  createdBy: string;
-  createdAt: string;
-  updatedAt: string;
-  isActive: boolean;
-  geohash: string;
-}
-
 /**
  * Lambda handler for CreateHub GraphQL mutation
  */
-export const handler = async (event: AppSyncEvent): Promise<Hub> => {
+export const handler = async (event: CreateHubEvent): Promise<Hub> => {
   console.log('CreateHub Lambda invoked:', JSON.stringify(event, null, 2));
 
   try {

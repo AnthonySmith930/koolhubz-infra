@@ -1,5 +1,7 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, GetCommand } from '@aws-sdk/lib-dynamodb';
+import { GetHubEvent } from '../../../../types/getHubTypes';
+import { Hub } from '../../../../types/hub';
 
 // Initialize DynamoDB client
 const ddbClient = new DynamoDBClient({});
@@ -7,35 +9,10 @@ const docClient = DynamoDBDocumentClient.from(ddbClient);
 
 const HUBS_TABLE_NAME = process.env.HUBS_TABLE_NAME!;
 
-// Types
-interface AppSyncEvent {
-  arguments: {
-    hubId: string;
-  };
-  identity?: {
-    sub: string;
-  };
-}
-
-interface Hub {
-  hubId: string;
-  name: string;
-  description: string;
-  latitude: number;
-  longitude: number;
-  radius: number;
-  hubType: 'PUBLIC' | 'PRIVATE';
-  createdBy: string;
-  createdAt: string;
-  updatedAt: string;
-  isActive: boolean;
-  geohash: string;
-}
-
 /**
  * Lambda handler for GetHub GraphQL query
  */
-export const handler = async (event: AppSyncEvent): Promise<Hub | null> => {
+export const handler = async (event: GetHubEvent): Promise<Hub | null> => {
   console.log('GetHub Lambda invoked:', JSON.stringify(event, null, 2));
 
   try {

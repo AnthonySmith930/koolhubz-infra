@@ -1,5 +1,7 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, GetCommand, DeleteCommand } from '@aws-sdk/lib-dynamodb';
+import { DeleteHubEvent } from '../../../../types/deleteHubTypes';
+import { Hub } from '../../../../types/hub';
 
 // Initialize DynamoDB client
 const ddbClient = new DynamoDBClient({});
@@ -7,36 +9,10 @@ const docClient = DynamoDBDocumentClient.from(ddbClient);
 
 const HUBS_TABLE_NAME = process.env.HUBS_TABLE_NAME!;
 
-// Types
-interface AppSyncEvent {
-  arguments: {
-    hubId: string;
-    userId?: string;
-  };
-  identity?: {
-    sub: string;
-  };
-}
-
-interface Hub {
-  hubId: string;
-  name: string;
-  description: string;
-  latitude: number;
-  longitude: number;
-  radius: number;
-  hubType: 'PUBLIC' | 'PRIVATE';
-  createdBy: string;
-  createdAt: string;
-  updatedAt: string;
-  isActive: boolean;
-  geohash: string;
-}
-
 /**
  * Lambda handler for DeleteHub GraphQL mutation
  */
-export const handler = async (event: AppSyncEvent): Promise<boolean> => {
+export const handler = async (event: DeleteHubEvent): Promise<boolean> => {
   console.log('DeleteHub Lambda invoked:', JSON.stringify(event, null, 2));
 
   try {

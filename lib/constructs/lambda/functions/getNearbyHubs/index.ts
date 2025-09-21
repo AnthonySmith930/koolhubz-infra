@@ -1,5 +1,7 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, QueryCommand } from '@aws-sdk/lib-dynamodb';
+import { GetNearbyHubsInput, GetNearbyHubsEvent } from '../../../../types/getNearbyHubsTypes';
+import { Hub, HubWithDistance } from '../../../../types/hub';
 
 // Initialize DynamoDB client
 const ddbClient = new DynamoDBClient({});
@@ -7,51 +9,10 @@ const docClient = DynamoDBDocumentClient.from(ddbClient);
 
 const HUBS_TABLE_NAME = process.env.HUBS_TABLE_NAME!;
 
-// Types
-interface GetNearbyHubsInput {
-  latitude: number;
-  longitude: number;
-  radiusKm?: number;
-  limit?: number;
-  hubType?: 'PUBLIC' | 'PRIVATE';
-}
-
-interface AppSyncEvent {
-  arguments: {
-    latitude: number;
-    longitude: number;
-    radiusKm?: number;
-    limit?: number;
-    hubType?: 'PUBLIC' | 'PRIVATE';
-  };
-  identity?: {
-    sub: string;
-  };
-}
-
-interface Hub {
-  hubId: string;
-  name: string;
-  description: string;
-  latitude: number;
-  longitude: number;
-  radius: number;
-  hubType: 'PUBLIC' | 'PRIVATE';
-  createdBy: string;
-  createdAt: string;
-  updatedAt: string;
-  isActive: boolean;
-  geohash: string;
-}
-
-interface HubWithDistance extends Hub {
-  distance: number;
-}
-
 /**
  * Lambda handler for GetNearbyHubs GraphQL query
  */
-export const handler = async (event: AppSyncEvent): Promise<Hub[]> => {
+export const handler = async (event: GetNearbyHubsEvent): Promise<Hub[]> => {
   console.log('GetNearbyHubs Lambda invoked:', JSON.stringify(event, null, 2));
 
   try {
