@@ -11,7 +11,6 @@ type Hub {
   isActive: Boolean!
   
   # Will implement later:
-  # settings: HubSettings
   # markers: [HubMarker]
   # inviteCode: String
   # qrCode: String
@@ -25,7 +24,7 @@ enum HubType {
 }
 
 input CreateHubInput {
-  userId: ID # Optional - for hybrid auth
+  userId: ID # for hybrid auth
   name: String!
   description: String!
   latitude: Float!
@@ -56,10 +55,10 @@ type Query {
 # Root mutation type  
 type Mutation {
   createHub(input: CreateHubInput!): Hub!
+  deleteHub(hubId: ID!, userId: ID): Boolean!
   
   # Will implement later:
   # updateHub(hubId: ID!, input: UpdateHubInput!): Hub!
-  # deleteHub(hubId: ID!): Boolean!
 }
 
 # Root subscription type

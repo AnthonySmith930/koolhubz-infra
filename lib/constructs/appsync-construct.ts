@@ -13,6 +13,7 @@ interface AppSyncConstructProps {
   createHubFunction: lambda.Function;
   getNearbyHubsFunction: lambda.Function;
   getHubFunction: lambda.Function;
+  deleteHubFunction: lambda.Function;
 }
 
 export class AppSyncConstruct extends Construct {
@@ -21,6 +22,7 @@ export class AppSyncConstruct extends Construct {
   public readonly createHubDataSource: appsync.LambdaDataSource;
   public readonly getNearbyHubsDataSource: appsync.LambdaDataSource;
   public readonly getHubDataSource: appsync.LambdaDataSource;
+  public readonly deleteHubDataSource: appsync.LambdaDataSource;
   
   constructor(scope: Construct, id: string, props: AppSyncConstructProps) {
     super(scope, id);
@@ -95,6 +97,16 @@ export class AppSyncConstruct extends Construct {
       }
     );
 
+    // Create Lambda data source for DeleteHub
+    this.deleteHubDataSource = this.api.addLambdaDataSource(
+      'DeleteHubDataSource',
+      props.deleteHubFunction,
+      {
+        name: 'DeleteHubLambda',
+        description: 'Lambda data source for hub deletion with ownership verification'
+      }
+    );
+
     // Create Lambda data source for GetNearbyHubs
     this.getNearbyHubsDataSource = this.api.addLambdaDataSource(
       'GetNearbyHubsDataSource',
@@ -166,7 +178,6 @@ export class AppSyncConstruct extends Construct {
       runtime: appsync.FunctionRuntime.JS_1_0_0
     });
 
-    // Query: getHub (uses Lambda for access control)
     new appsync.Resolver(this, 'GetHubResolver', {
       api: this.api,
       typeName: 'Query',
@@ -193,7 +204,40 @@ export class AppSyncConstruct extends Construct {
           return ctx.result;
         }
       `),
-      
+
+      runtime: appsync.FunctionRuntime.JS_1_0_0
+    });
+
+    // Mutation: deleteHub (uses Lambda for ownership verification)
+    new appsync.Resolver(this, 'DeleteHubResolver', {
+      api: this.api,
+      typeName: 'Mutation',
+      fieldName: 'deleteHub',
+      dataSource: this.deleteHubDataSource,
+      code: appsync.Code.fromInline(`
+        import { util } from '@aws-appsync/utils';
+
+        export function request(ctx) {
+          return {
+            operation: 'Invoke',
+            payload: {
+              arguments: ctx.args,
+              fieldName: ctx.info.fieldName,
+              identity: ctx.identity,
+            }
+          };
+        }
+
+        export function response(ctx) {
+        console.log('ctx.result type:', typeof ctx.result);
+        console.log('ctx.result value:', JSON.stringify(ctx.result));
+        
+          if (ctx.error) {
+            util.error(ctx.error.message, ctx.error.type);
+          }
+          return ctx.result;
+        }
+      `),
       runtime: appsync.FunctionRuntime.JS_1_0_0
     });
 
@@ -225,7 +269,7 @@ export class AppSyncConstruct extends Construct {
     `),
 
     runtime: appsync.FunctionRuntime.JS_1_0_0
-  });
+    });
 
     // TODO: Add more resolvers as we implement them
     // Query: getHub (will use DynamoDB data source for simple lookup)

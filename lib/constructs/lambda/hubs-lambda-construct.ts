@@ -1,10 +1,7 @@
 import * as cdk from 'aws-cdk-lib';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
-import * as nodejs from 'aws-cdk-lib/aws-lambda-nodejs';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
-import * as iam from 'aws-cdk-lib/aws-iam';
 import { Construct } from 'constructs';
-import * as path from 'path';
 import { createHubLambdaFunction } from '../../helpers/lambdaHelpers';
 
 interface HubsLambdaConstructProps {
@@ -16,6 +13,7 @@ export class HubsLambdaConstruct extends Construct {
   public readonly createHubFunction: lambda.Function;
   public readonly getNearbyHubsFunction: lambda.Function;
   public readonly getHubFunction: lambda.Function;
+  public readonly deleteHubFunction: lambda.Function;
 
   constructor(scope: Construct, id: string, props: HubsLambdaConstructProps) {
     super(scope, id);
@@ -42,6 +40,18 @@ export class HubsLambdaConstruct extends Construct {
       tableName: props.hubsTable.tableName,
       entryPath: 'lib/constructs/lambda/functions/getHub/index.ts',
       description: 'Gets a single hub by ID with access control',
+      hubsTable: props.hubsTable,
+    })
+
+    // DeleteHub Lambda Function  
+    this.deleteHubFunction = createHubLambdaFunction({
+      construct: this,
+      id: 'DeleteHubFunction',
+      stageName: props.stage,
+      functionName: 'DeleteHub',
+      tableName: props.hubsTable.tableName,
+      entryPath: 'lib/constructs/lambda/functions/deleteHub/index.ts',
+      description: 'Deletes a hub with ownership verification',
       hubsTable: props.hubsTable,
     })
 
