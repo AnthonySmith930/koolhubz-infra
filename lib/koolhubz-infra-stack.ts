@@ -38,7 +38,8 @@ export class KoolHubzStack extends cdk.Stack {
       hubsTable: this.hubsTable.table,
       userPool: this.cognito.userPool,
       createHubFunction: this.hubsLambda.createHubFunction,
-      getNearbyHubsFunction: this.hubsLambda.getNearbyHubsFunction
+      getNearbyHubsFunction: this.hubsLambda.getNearbyHubsFunction,
+      getHubFunction: this.hubsLambda.getHubFunction
     });
 
     // Tag all resources

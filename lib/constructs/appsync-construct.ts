@@ -11,7 +11,8 @@ interface AppSyncConstructProps {
   hubsTable: dynamodb.Table;
   userPool: cognito.UserPool;
   createHubFunction: lambda.Function;
-  getNearbyHubsFunction: lambda.Function
+  getNearbyHubsFunction: lambda.Function;
+  getHubFunction: lambda.Function;
 }
 
 export class AppSyncConstruct extends Construct {
@@ -19,6 +20,7 @@ export class AppSyncConstruct extends Construct {
   public readonly hubsDataSource: appsync.DynamoDbDataSource;
   public readonly createHubDataSource: appsync.LambdaDataSource;
   public readonly getNearbyHubsDataSource: appsync.LambdaDataSource;
+  public readonly getHubDataSource: appsync.LambdaDataSource;
   
   constructor(scope: Construct, id: string, props: AppSyncConstructProps) {
     super(scope, id);
@@ -80,6 +82,16 @@ export class AppSyncConstruct extends Construct {
       {
         name: 'CreateHubLambda',
         description: 'Lambda data source for hub creation with geohash indexing'
+      }
+    );
+
+    // Create Lambda data source for GetHub
+    this.getHubDataSource = this.api.addLambdaDataSource(
+      'GetHubDataSource',
+      props.getHubFunction,
+      {
+        name: 'GetHubLambda',
+        description: 'Lambda data source for single hub lookup with access control'
       }
     );
 
@@ -151,6 +163,37 @@ export class AppSyncConstruct extends Construct {
             return ctx.result;
         }
       `),
+      runtime: appsync.FunctionRuntime.JS_1_0_0
+    });
+
+    // Query: getHub (uses Lambda for access control)
+    new appsync.Resolver(this, 'GetHubResolver', {
+      api: this.api,
+      typeName: 'Query',
+      fieldName: 'getHub',
+      dataSource: this.getHubDataSource,
+      code: appsync.Code.fromInline(`
+        import { util } from '@aws-appsync/utils';
+
+        export function request(ctx) {
+          return {
+            operation: 'Invoke',
+            payload: {
+              arguments: ctx.args,
+              fieldName: ctx.info.fieldName,
+              identity: ctx.identity,
+            }
+          };
+        }
+
+        export function response(ctx) {
+          if (ctx.error) {
+            util.error(ctx.error.message, ctx.error.type);
+          }
+          return ctx.result;
+        }
+      `),
+      
       runtime: appsync.FunctionRuntime.JS_1_0_0
     });
 

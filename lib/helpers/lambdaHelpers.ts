@@ -14,8 +14,8 @@ interface CreateHubLambdaFunctionArgs {
     tableName: string,
     entryPath: string,
     description: string,
-    nodeModules: string[],
     hubsTable: dynamodb.Table,
+    nodeModules?: string[],
     readOnly?: boolean
 }
 
@@ -28,7 +28,7 @@ export function createHubLambdaFunction(args: CreateHubLambdaFunctionArgs) {
         tableName,
         entryPath,
         description,
-        nodeModules,
+        nodeModules = [],
         hubsTable,
         readOnly = false
     } = args

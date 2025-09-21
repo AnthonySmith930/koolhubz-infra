@@ -37,7 +37,7 @@ input CreateHubInput {
 # Root query type
 type Query {
   # Placeholder for future queries
-  # getHub(hubId: ID!): Hub
+  getHub(hubId: ID!): Hub
   
   # Get hubs near a specific location
   getNearbyHubs(

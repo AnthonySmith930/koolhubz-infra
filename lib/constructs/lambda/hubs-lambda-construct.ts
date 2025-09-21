@@ -15,6 +15,7 @@ interface HubsLambdaConstructProps {
 export class HubsLambdaConstruct extends Construct {
   public readonly createHubFunction: lambda.Function;
   public readonly getNearbyHubsFunction: lambda.Function;
+  public readonly getHubFunction: lambda.Function;
 
   constructor(scope: Construct, id: string, props: HubsLambdaConstructProps) {
     super(scope, id);
@@ -32,6 +33,18 @@ export class HubsLambdaConstruct extends Construct {
       hubsTable: props.hubsTable
     })
 
+    // GetHub Lambda Function
+    this.getHubFunction = createHubLambdaFunction({
+      construct: this,
+      id: 'GetHubFunction',
+      stageName: props.stage,
+      functionName: 'GetHub',
+      tableName: props.hubsTable.tableName,
+      entryPath: 'lib/constructs/lambda/functions/getHub/index.ts',
+      description: 'Gets a single hub by ID with access control',
+      hubsTable: props.hubsTable,
+    })
+
     // GetNearbyHubs Lambda Function
     this.getNearbyHubsFunction = createHubLambdaFunction({
       construct: this,
@@ -41,21 +54,10 @@ export class HubsLambdaConstruct extends Construct {
       tableName: props.hubsTable.tableName,
       entryPath: 'lib/constructs/lambda/functions/getNearbyHubs/index.ts',
       description: 'Gets hubs near a specific location using geospatial queries',
-      nodeModules: ['ngeohash', 'geolib'],
       hubsTable: props.hubsTable,
+      nodeModules: ['ngeohash', 'geolib'],
       readOnly: true
     })
-
-    // Create CloudWatch Log Group with retention
-    new cdk.aws_logs.LogGroup(this, 'CreateHubManagedLogGroup', { // Changed ID
-      logGroupName: `/aws/lambda/${this.createHubFunction.functionName}-managed`,
-      retention: props.stage === 'prod' 
-        ? cdk.aws_logs.RetentionDays.ONE_MONTH 
-        : cdk.aws_logs.RetentionDays.ONE_WEEK,
-      removalPolicy: props.stage === 'prod' 
-        ? cdk.RemovalPolicy.RETAIN 
-        : cdk.RemovalPolicy.DESTROY,
-    });
 
     // Outputs for debugging
     new cdk.CfnOutput(this, 'CreateHubFunctionName', {
