@@ -3,8 +3,12 @@ import * as appsync from 'aws-cdk-lib/aws-appsync';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as cognito from 'aws-cdk-lib/aws-cognito';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
-import { Construct } from 'constructs';
 import * as path from 'path';
+import { Construct } from 'constructs';
+import createHubResolver from '../resolvers/mutations/createHubResolver';
+import getHubResolver from '../resolvers/queries/getHubResolver';
+import deleteHubResolver from '../resolvers/mutations/deleteHubResolver';
+import getNearbyHubsResolver from '../resolvers/queries/getNearbyHubsResolver';
 
 interface AppSyncConstructProps {
   stage: string;
@@ -149,132 +153,12 @@ export class AppSyncConstruct extends Construct {
    * Create and attach resolvers to the GraphQL API
    */
   private createResolvers(): void {
-    new appsync.Resolver(this, 'CreateHubResolver', {
-      api: this.api,
-      typeName: 'Mutation',
-      fieldName: 'createHub',
-      dataSource: this.createHubDataSource,
-      code: appsync.Code.fromInline(`
-        import { util } from '@aws-appsync/utils';
-
-        export function request(ctx) {
-            return {
-            operation: 'Invoke',
-            payload: {
-                arguments: ctx.args,
-                fieldName: ctx.info.fieldName,
-                identity: ctx.identity,
-            }
-            };
-        }
-
-        export function response(ctx) {
-            if (ctx.error) {
-            util.error(ctx.error.message, ctx.error.type);
-            }
-            return ctx.result;
-        }
-      `),
-      runtime: appsync.FunctionRuntime.JS_1_0_0
-    });
-
-    new appsync.Resolver(this, 'GetHubResolver', {
-      api: this.api,
-      typeName: 'Query',
-      fieldName: 'getHub',
-      dataSource: this.getHubDataSource,
-      code: appsync.Code.fromInline(`
-        import { util } from '@aws-appsync/utils';
-
-        export function request(ctx) {
-          return {
-            operation: 'Invoke',
-            payload: {
-              arguments: ctx.args,
-              fieldName: ctx.info.fieldName,
-              identity: ctx.identity,
-            }
-          };
-        }
-
-        export function response(ctx) {
-          if (ctx.error) {
-            util.error(ctx.error.message, ctx.error.type);
-          }
-          return ctx.result;
-        }
-      `),
-
-      runtime: appsync.FunctionRuntime.JS_1_0_0
-    });
-
-    // Mutation: deleteHub (uses Lambda for ownership verification)
-    new appsync.Resolver(this, 'DeleteHubResolver', {
-      api: this.api,
-      typeName: 'Mutation',
-      fieldName: 'deleteHub',
-      dataSource: this.deleteHubDataSource,
-      code: appsync.Code.fromInline(`
-        import { util } from '@aws-appsync/utils';
-
-        export function request(ctx) {
-          return {
-            operation: 'Invoke',
-            payload: {
-              arguments: ctx.args,
-              fieldName: ctx.info.fieldName,
-              identity: ctx.identity,
-            }
-          };
-        }
-
-        export function response(ctx) {
-        console.log('ctx.result type:', typeof ctx.result);
-        console.log('ctx.result value:', JSON.stringify(ctx.result));
-        
-          if (ctx.error) {
-            util.error(ctx.error.message, ctx.error.type);
-          }
-          return ctx.result;
-        }
-      `),
-      runtime: appsync.FunctionRuntime.JS_1_0_0
-    });
-
-    new appsync.Resolver(this, 'GetNearbyHubsResolver', {
-      api: this.api,
-      typeName: 'Query',
-      fieldName: 'getNearbyHubs',
-      dataSource: this.getNearbyHubsDataSource,
-      code: appsync.Code.fromInline(`
-        import { util } from '@aws-appsync/utils';
-
-        export function request(ctx) {
-          return {
-            operation: 'Invoke',
-            payload: {
-              arguments: ctx.args,
-              fieldName: ctx.info.fieldName,
-              identity: ctx.identity,
-            }
-          };
-        }
-
-        export function response(ctx) {
-          if (ctx.error) {
-            util.error(ctx.error.message, ctx.error.type);
-          }
-          return ctx.result;
-        }
-    `),
-
-    runtime: appsync.FunctionRuntime.JS_1_0_0
-    });
+    createHubResolver(this, this.createHubDataSource, this.api)
+    getHubResolver(this, this.getHubDataSource, this.api)
+    deleteHubResolver(this, this.deleteHubDataSource, this.api)
+    getNearbyHubsResolver(this, this.getNearbyHubsDataSource, this.api)
 
     // TODO: Add more resolvers as we implement them
-    // Query: getHub (will use DynamoDB data source for simple lookup)
-    // Query: getNearbyHubs (will use Lambda for geospatial queries)
     // Mutation: updateHub (might use DynamoDB data source)
-    // Mutation: deleteHub (might use DynamoDB data source)
   }
 }
