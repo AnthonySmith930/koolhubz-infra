@@ -1,7 +1,7 @@
 import { Construct } from "constructs";
 import * as appsync from 'aws-cdk-lib/aws-appsync';
 
-export default function createDeleteHubResolver(
+export default function deleteHubResolver(
     construct: Construct, 
     deleteHubDataSource: appsync.LambdaDataSource, 
     api: appsync.GraphqlApi

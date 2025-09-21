@@ -5,10 +5,10 @@ import * as cognito from 'aws-cdk-lib/aws-cognito';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as path from 'path';
 import { Construct } from 'constructs';
-import createHubResolver from '../resolvers/mutations/createHubResolver';
-import getHubResolver from '../resolvers/queries/getHubResolver';
-import deleteHubResolver from '../resolvers/mutations/deleteHubResolver';
-import getNearbyHubsResolver from '../resolvers/queries/getNearbyHubsResolver';
+import createHubResolver from './resolvers/mutations/createHubResolver';
+import getHubResolver from './resolvers/queries/getHubResolver';
+import deleteHubResolver from './resolvers/mutations/deleteHubResolver';
+import getNearbyHubsResolver from './resolvers/queries/getNearbyHubsResolver';
 
 interface AppSyncConstructProps {
   stage: string;

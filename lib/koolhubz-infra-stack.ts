@@ -1,9 +1,9 @@
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-import { CognitoConstruct } from './constructs/cognito-construct';
-import { HubsTableConstruct } from './constructs/hubs-table-construct';
-import { HubsLambdaConstruct } from './constructs/lambda/hubs-lambda-construct';
-import { AppSyncConstruct } from './constructs/appsync-construct';
+import { CognitoConstruct } from './constructs/foundation/cognito-construct';
+import { HubsTableConstruct } from './constructs/data/hubs-table-construct';
+import { HubsLambdaConstruct } from './constructs/compute/hubs-lambda-construct';
+import { AppSyncConstruct } from './constructs/api/appsync-construct';
 
 interface KoolHubzStackProps extends cdk.StackProps {
   stage: string;
