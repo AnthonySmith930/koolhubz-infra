@@ -1,3 +1,5 @@
+
+# Hub types ---------------------------------------------
 type Hub {
   hubId: ID!
   name: String!
@@ -24,7 +26,7 @@ enum HubType {
 }
 
 input CreateHubInput {
-  userId: ID # for hybrid auth
+  userId: ID
   name: String!
   description: String!
   latitude: Float!
@@ -33,12 +35,72 @@ input CreateHubInput {
   hubType: HubType!
 }
 
-# Root query type
+# User Types ---------------------------------------------
+type User {
+  userId: ID!
+  profile: UserProfile!
+  preferences: UserPreferences!
+  joinedAt: AWSDateTime!
+  currentHub: String
+  favoriteHubs: [FavoriteHub!]!
+  blockedUsers: [String!]
+  updatedAt: AWSDateTime!
+}
+
+type UserProfile {
+  displayName: String!
+  bio: String
+  friends: [String!]
+}
+
+type UserPreferences {
+  theme: Theme!
+  notifications: Boolean!
+  locationSharing: LocationSharing!
+  profileVisibility: ProfileVisibility!
+  isAnonymous: Boolean!
+}
+
+type FavoriteHub {
+  name: String!
+  hubId: String!
+}
+
+enum Theme {
+  LIGHT
+  DARK
+  AUTO
+}
+
+enum LocationSharing {
+  ALWAYS
+  HUBS_ONLY
+  NEVER
+}
+
+enum ProfileVisibility {
+  PUBLIC
+  FRIENDS
+  PRIVATE
+}
+
+input CreateUserInput {
+  displayName: String!
+  bio: String
+}
+
+input UserPreferencesInput {
+  theme: Theme
+  notifications: Boolean
+  locationSharing: LocationSharing
+  profileVisibility: ProfileVisibility
+  isAnonymous: Boolean
+}
+
 type Query {
-  # Placeholder for future queries
+  # Hub queries
   getHub(hubId: ID!): Hub
-  
-  # Get hubs near a specific location
+
   getNearbyHubs(
     latitude: Float!
     longitude: Float!
@@ -50,18 +112,24 @@ type Query {
   # Will implement later:
   # getNearbyHubs(latitude: Float!, longitude: Float!, radiusKm: Float): [Hub]
   # searchHubs(query: String!, latitude: Float, longitude: Float): [Hub]
-}
 
-# Root mutation type  
-type Mutation {
-  createHub(input: CreateHubInput!): Hub!
-  deleteHub(hubId: ID!, userId: ID): Boolean!
+# User queries
+  getMe: User
+}
   
+type Mutation {
+  # Hub mutations
+  createHub(input: CreateHubInput!): Hub!
+
+  deleteHub(hubId: ID!, userId: ID): Boolean!
+
   # Will implement later:
   # updateHub(hubId: ID!, input: UpdateHubInput!): Hub!
+
+  # User mutations
+  createUser(input: CreateUserInput!): User!
 }
 
-# Root subscription type
 type Subscription {
   # Will implement later:
   # onHubCreated: Hub @aws_subscribe(mutations: ["createHub"])

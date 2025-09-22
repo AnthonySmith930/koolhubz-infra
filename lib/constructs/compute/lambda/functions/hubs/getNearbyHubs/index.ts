@@ -1,7 +1,7 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, QueryCommand } from '@aws-sdk/lib-dynamodb';
-import { GetNearbyHubsInput, GetNearbyHubsEvent } from '../../../../../types/getNearbyHubsTypes';
-import { Hub, HubWithDistance } from '../../../../../types/hub';
+import { GetNearbyHubsInput, GetNearbyHubsEvent } from '../../../../../../types/getNearbyHubsTypes';
+import { Hub, HubWithDistance } from '../../../../../../types/hub';
 
 // Initialize DynamoDB client
 const ddbClient = new DynamoDBClient({});

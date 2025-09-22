@@ -3,7 +3,9 @@ import { Construct } from 'constructs';
 import { CognitoConstruct } from './constructs/foundation/cognito-construct';
 import { HubsTableConstruct } from './constructs/data/hubs-table-construct';
 import { HubsLambdaConstruct } from './constructs/compute/hubs-lambda-construct';
+import { UsersLambdaConstruct } from './constructs/compute/users-lambda-construct';
 import { AppSyncConstruct } from './constructs/api/appsync-construct';
+import { UsersTableConstruct } from './constructs/data/users-table-construct';
 
 interface KoolHubzStackProps extends cdk.StackProps {
   stage: string;
@@ -14,6 +16,8 @@ export class KoolHubzStack extends cdk.Stack {
   public readonly hubsTable: HubsTableConstruct
   public readonly appSync: AppSyncConstruct
   public readonly hubsLambda: HubsLambdaConstruct
+  public readonly usersLambda: UsersLambdaConstruct
+  public readonly usersTable: UsersTableConstruct;
 
   constructor(scope: Construct, id: string, props: KoolHubzStackProps) {
     super(scope, id, props);
@@ -26,21 +30,32 @@ export class KoolHubzStack extends cdk.Stack {
       stage: props.stage
     });
 
+    this.usersTable = new UsersTableConstruct(this, "UsersTable", {
+      stage: props.stage
+    });
+
     // Make sure this line exists and comes BEFORE the AppSync creation
     this.hubsLambda = new HubsLambdaConstruct(this, "HubsLambda", {
       stage: props.stage,
       hubsTable: this.hubsTable.table
     });
 
+    this.usersLambda = new UsersLambdaConstruct(this, "UsersLambda", {
+      stage: props.stage,
+      usersTable: this.usersTable.table
+    });
+
     // GraphQL API
     this.appSync = new AppSyncConstruct(this, "AppSync", {
       stage: props.stage,
       hubsTable: this.hubsTable.table,
+      usersTable: this.usersTable.table,
       userPool: this.cognito.userPool,
       createHubFunction: this.hubsLambda.createHubFunction,
       getNearbyHubsFunction: this.hubsLambda.getNearbyHubsFunction,
       getHubFunction: this.hubsLambda.getHubFunction,
-      deleteHubFunction: this.hubsLambda.deleteHubFunction
+      deleteHubFunction: this.hubsLambda.deleteHubFunction,
+      createUserFunction: this.usersLambda.createUserFunction
     });
 
     // Tag all resources

@@ -9,35 +9,42 @@ import createHubResolver from './resolvers/mutations/createHubResolver';
 import getHubResolver from './resolvers/queries/getHubResolver';
 import deleteHubResolver from './resolvers/mutations/deleteHubResolver';
 import getNearbyHubsResolver from './resolvers/queries/getNearbyHubsResolver';
+import createUserResolver from './resolvers/mutations/createUserResolver';
 
 interface AppSyncConstructProps {
   stage: string;
   hubsTable: dynamodb.Table;
+  usersTable: dynamodb.Table;
   userPool: cognito.UserPool;
   createHubFunction: lambda.Function;
   getNearbyHubsFunction: lambda.Function;
   getHubFunction: lambda.Function;
   deleteHubFunction: lambda.Function;
+  createUserFunction: lambda.Function;
 }
 
 export class AppSyncConstruct extends Construct {
   public readonly api: appsync.GraphqlApi;
+
+  // Hub datasources
   public readonly hubsDataSource: appsync.DynamoDbDataSource;
   public readonly createHubDataSource: appsync.LambdaDataSource;
   public readonly getNearbyHubsDataSource: appsync.LambdaDataSource;
   public readonly getHubDataSource: appsync.LambdaDataSource;
   public readonly deleteHubDataSource: appsync.LambdaDataSource;
+
+  // User datasources
+  public readonly createUserDataSource: appsync.LambdaDataSource; 
   
   constructor(scope: Construct, id: string, props: AppSyncConstructProps) {
     super(scope, id);
 
-    // Create the GraphQL API
     this.api = new appsync.GraphqlApi(this, 'KoolHubzApi', {
       name: `KoolHubz-${props.stage}-API`,
       
       // Schema from external file
       definition: appsync.Definition.fromFile(
-        path.join(__dirname, 'schema', 'hubSchema.graphql')
+        path.join(__dirname, 'schema', 'schema.graphql')
       ),
 
       // Authentication configuration
@@ -70,18 +77,6 @@ export class AppSyncConstruct extends Construct {
       xrayEnabled: props.stage === 'prod'
     });
 
-    // Create DynamoDB data source for Hubs table
-    // TODO: Uncomment this when we add other resolvers that don't need lambda
-    // this.hubsDataSource = this.api.addDynamoDbDataSource(
-    //   'HubsDataSource',
-    //   props.hubsTable,
-    //   {
-    //     name: 'HubsTable',
-    //     description: 'DynamoDB data source for Hubs table'
-    //   }
-    // );
-
-    // Create Lambda data source for CreateHub
     this.createHubDataSource = this.api.addLambdaDataSource(
       'CreateHubDataSource',
       props.createHubFunction,
@@ -91,7 +86,6 @@ export class AppSyncConstruct extends Construct {
       }
     );
 
-    // Create Lambda data source for GetHub
     this.getHubDataSource = this.api.addLambdaDataSource(
       'GetHubDataSource',
       props.getHubFunction,
@@ -101,7 +95,6 @@ export class AppSyncConstruct extends Construct {
       }
     );
 
-    // Create Lambda data source for DeleteHub
     this.deleteHubDataSource = this.api.addLambdaDataSource(
       'DeleteHubDataSource',
       props.deleteHubFunction,
@@ -111,7 +104,6 @@ export class AppSyncConstruct extends Construct {
       }
     );
 
-    // Create Lambda data source for GetNearbyHubs
     this.getNearbyHubsDataSource = this.api.addLambdaDataSource(
       'GetNearbyHubsDataSource',
       props.getNearbyHubsFunction,
@@ -121,44 +113,55 @@ export class AppSyncConstruct extends Construct {
       }
     );
 
+    this.createUserDataSource = this.api.addLambdaDataSource(
+      'CreateUserDataSource',
+      props.createUserFunction,
+      {
+        name: 'CreateUserLambda',
+        description: 'Lambda data source for user profile creation'
+      }
+    );
+
     this.createResolvers()
 
-    // Outputs for the mobile app and testing
-    new cdk.CfnOutput(this, 'GraphQLApiEndpoint', {
-      value: this.api.graphqlUrl,
-      description: 'GraphQL API Endpoint',
-      exportName: `KoolHubz-${props.stage}-GraphQLEndpoint`
-    });
-
-    new cdk.CfnOutput(this, 'GraphQLApiKey', {
-      value: this.api.apiKey || 'No API Key',
-      description: 'GraphQL API Key for testing',
-      exportName: `KoolHubz-${props.stage}-GraphQLApiKey`
-    });
-
-    new cdk.CfnOutput(this, 'GraphQLApiId', {
-      value: this.api.apiId,
-      description: 'GraphQL API ID',
-      exportName: `KoolHubz-${props.stage}-GraphQLApiId`
-    });
-
-    new cdk.CfnOutput(this, 'GraphQLRegion', {
-      value: cdk.Stack.of(this).region,
-      description: 'AWS Region for GraphQL API',
-      exportName: `KoolHubz-${props.stage}-GraphQLRegion`
-    });
+    this.createOutputs(props.stage)
   }
 
-  /**
-   * Create and attach resolvers to the GraphQL API
-   */
   private createResolvers(): void {
+    // Hub resolvers
     createHubResolver(this, this.createHubDataSource, this.api)
     getHubResolver(this, this.getHubDataSource, this.api)
     deleteHubResolver(this, this.deleteHubDataSource, this.api)
     getNearbyHubsResolver(this, this.getNearbyHubsDataSource, this.api)
 
-    // TODO: Add more resolvers as we implement them
-    // Mutation: updateHub (might use DynamoDB data source)
+    // User resolvers
+    createUserResolver(this, this.createUserDataSource, this.api)
+  }
+
+  private createOutputs(stage: string): void {
+    // Outputs for the mobile app and testing
+    new cdk.CfnOutput(this, 'GraphQLApiEndpoint', {
+      value: this.api.graphqlUrl,
+      description: 'GraphQL API Endpoint',
+      exportName: `KoolHubz-${stage}-GraphQLEndpoint`
+    });
+
+    new cdk.CfnOutput(this, 'GraphQLApiKey', {
+      value: this.api.apiKey || 'No API Key',
+      description: 'GraphQL API Key for testing',
+      exportName: `KoolHubz-${stage}-GraphQLApiKey`
+    });
+
+    new cdk.CfnOutput(this, 'GraphQLApiId', {
+      value: this.api.apiId,
+      description: 'GraphQL API ID',
+      exportName: `KoolHubz-${stage}-GraphQLApiId`
+    });
+
+    new cdk.CfnOutput(this, 'GraphQLRegion', {
+      value: cdk.Stack.of(this).region,
+      description: 'AWS Region for GraphQL API',
+      exportName: `KoolHubz-${stage}-GraphQLRegion`
+    });
   }
 }

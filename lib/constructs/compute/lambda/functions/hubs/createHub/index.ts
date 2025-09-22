@@ -1,7 +1,7 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb';
-import { CreateHubEvent, CreateHubInput } from '../../../../../types/createHubTypes';
-import { Hub } from '../../../../../types/hub';
+import { CreateHubEvent, CreateHubInput } from '../../../../../../types/createHubTypes';
+import { Hub } from '../../../../../../types/hub';
 
 // Initialize DynamoDB client
 const ddbClient = new DynamoDBClient({});

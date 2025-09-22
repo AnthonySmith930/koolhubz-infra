@@ -6,42 +6,42 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import * as path from 'path';
 import { Construct } from 'constructs';
 
-interface CreateHubLambdaFunctionArgs {
+interface CreateLambdaFunctionArgs {
     construct: Construct,
     id: string,
+    timeoutDuration: number,
     stageName: string,
     functionName: string,
-    tableName: string,
     entryPath: string,
     description: string,
-    hubsTable: dynamodb.Table,
+    table: dynamodb.Table,
     nodeModules?: string[],
     readOnly?: boolean
 }
 
-export function createHubLambdaFunction(args: CreateHubLambdaFunctionArgs) {
+export function createLambdaFunction(args: CreateLambdaFunctionArgs) {
     const {
         construct,
         id,
+        timeoutDuration,
         stageName,
         functionName,
-        tableName,
         entryPath,
         description,
         nodeModules = [],
-        hubsTable,
+        table,
         readOnly = false
     } = args
 
     const newFunction = new nodejs.NodejsFunction(construct, id, {
         runtime: lambda.Runtime.NODEJS_20_X,
-        timeout: cdk.Duration.seconds(30),
+        timeout: cdk.Duration.seconds(timeoutDuration),
         memorySize: 256,
         functionName: `KoolHubz-${stageName}-${functionName}`,
         entry: path.resolve(process.cwd(), entryPath),
         description: description,
         environment: {
-            HUBS_TABLE_NAME: tableName,
+            HUBS_TABLE_NAME: table.tableName,
             NODE_OPTIONS: '--enable-source-maps',
             STAGE: stageName,
         },
@@ -59,9 +59,9 @@ export function createHubLambdaFunction(args: CreateHubLambdaFunctionArgs) {
     });
     
     if (readOnly) {
-        grantDynamoDBReadPermissions(newFunction, hubsTable);
+        grantDynamoDBReadPermissions(newFunction, table);
     } else {
-        grantDynamoDBFullPermissions(newFunction, hubsTable);
+        grantDynamoDBFullPermissions(newFunction, table);
     }
 
     return newFunction

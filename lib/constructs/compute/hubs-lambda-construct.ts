@@ -2,7 +2,7 @@ import * as cdk from 'aws-cdk-lib';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import { Construct } from 'constructs';
-import { createHubLambdaFunction } from '../../helpers/lambdaHelpers';
+import { createLambdaFunction } from '../../helpers/lambdaHelpers';
 
 interface HubsLambdaConstructProps {
   stage: string;
@@ -19,52 +19,52 @@ export class HubsLambdaConstruct extends Construct {
     super(scope, id);
 
     // CreateHub Lambda Function
-    this.createHubFunction = createHubLambdaFunction({
+    this.createHubFunction = createLambdaFunction({
       construct: this,
       id: 'CreateHubFunction',
+      timeoutDuration: 30,
       stageName: props.stage,
       functionName: 'CreateHub',
-      tableName: props.hubsTable.tableName,
-      entryPath: 'lib/constructs/compute/lambda/functions/createHub/index.ts',
+      entryPath: 'lib/constructs/compute/lambda/functions/hubs/createHub/index.ts',
       description: 'Creates a new hub with geohash indexing and validation',
       nodeModules: ['uuid', 'ngeohash'],
-      hubsTable: props.hubsTable
+      table: props.hubsTable
     })
 
     // GetHub Lambda Function
-    this.getHubFunction = createHubLambdaFunction({
+    this.getHubFunction = createLambdaFunction({
       construct: this,
       id: 'GetHubFunction',
+      timeoutDuration: 30,
       stageName: props.stage,
       functionName: 'GetHub',
-      tableName: props.hubsTable.tableName,
-      entryPath: 'lib/constructs/compute/lambda/functions/getHub/index.ts',
+      entryPath: 'lib/constructs/compute/lambda/functions/hubs/getHub/index.ts',
       description: 'Gets a single hub by ID with access control',
-      hubsTable: props.hubsTable,
+      table: props.hubsTable,
     })
 
     // DeleteHub Lambda Function  
-    this.deleteHubFunction = createHubLambdaFunction({
+    this.deleteHubFunction = createLambdaFunction({
       construct: this,
       id: 'DeleteHubFunction',
+      timeoutDuration: 30,
       stageName: props.stage,
       functionName: 'DeleteHub',
-      tableName: props.hubsTable.tableName,
-      entryPath: 'lib/constructs/compute/lambda/functions/deleteHub/index.ts',
+      entryPath: 'lib/constructs/compute/lambda/functions/hubs/deleteHub/index.ts',
       description: 'Deletes a hub with ownership verification',
-      hubsTable: props.hubsTable,
+      table: props.hubsTable,
     })
 
     // GetNearbyHubs Lambda Function
-    this.getNearbyHubsFunction = createHubLambdaFunction({
+    this.getNearbyHubsFunction = createLambdaFunction({
       construct: this,
       id: 'GetNearbyHubsFunction',
+      timeoutDuration: 30,
       stageName: props.stage,
       functionName: 'GetNearbyHubs',
-      tableName: props.hubsTable.tableName,
-      entryPath: 'lib/constructs/compute/lambda/functions/getNearbyHubs/index.ts',
+      entryPath: 'lib/constructs/compute/lambda/functions/hubs/getNearbyHubs/index.ts',
       description: 'Gets hubs near a specific location using geospatial queries',
-      hubsTable: props.hubsTable,
+      table: props.hubsTable,
       nodeModules: ['ngeohash', 'geolib'],
       readOnly: true
     })
