@@ -28,6 +28,9 @@ export class HubsLambdaConstruct extends Construct {
       entryPath: 'lib/constructs/compute/lambda/functions/hubs/createHub/index.ts',
       description: 'Creates a new hub with geohash indexing and validation',
       nodeModules: ['uuid', 'ngeohash'],
+      envTable: {
+        HUBS_TABLE_NAME: props.hubsTable.tableName
+      },
       table: props.hubsTable
     })
 
@@ -40,6 +43,9 @@ export class HubsLambdaConstruct extends Construct {
       functionName: 'GetHub',
       entryPath: 'lib/constructs/compute/lambda/functions/hubs/getHub/index.ts',
       description: 'Gets a single hub by ID with access control',
+      envTable: {
+        HUBS_TABLE_NAME: props.hubsTable.tableName
+      },
       table: props.hubsTable,
     })
 
@@ -52,6 +58,9 @@ export class HubsLambdaConstruct extends Construct {
       functionName: 'DeleteHub',
       entryPath: 'lib/constructs/compute/lambda/functions/hubs/deleteHub/index.ts',
       description: 'Deletes a hub with ownership verification',
+      envTable: {
+        HUBS_TABLE_NAME: props.hubsTable.tableName
+      },
       table: props.hubsTable,
     })
 
@@ -66,6 +75,9 @@ export class HubsLambdaConstruct extends Construct {
       description: 'Gets hubs near a specific location using geospatial queries',
       table: props.hubsTable,
       nodeModules: ['ngeohash', 'geolib'],
+      envTable: {
+        HUBS_TABLE_NAME: props.hubsTable.tableName
+      },
       readOnly: true
     })
 

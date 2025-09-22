@@ -2,10 +2,15 @@ import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb';
 import { User, UserPreferences } from '../../../../../../types/userTypes';
 import { CreateUserInput, CreateUserEvent } from '../../../../../../types/createUserTypes';
+import { getAuthenticatedUser } from '../../../../../../helpers/getAuthenticatedUser';
 
 // Initialize DynamoDB client
 const ddbClient = new DynamoDBClient({});
-const docClient = DynamoDBDocumentClient.from(ddbClient);
+const docClient = DynamoDBDocumentClient.from(ddbClient, {
+  marshallOptions: {
+    removeUndefinedValues: true
+  }
+});
 
 const USERS_TABLE_NAME = process.env.USERS_TABLE_NAME!;
 
@@ -17,14 +22,9 @@ export const handler = async (event: CreateUserEvent): Promise<User> => {
 
   try {
     const input = event.arguments.input;
+    const auth = getAuthenticatedUser(event, input);
 
-    // Get user ID from Cognito identity
-    const userId = event.identity?.sub;
-    if (!userId) {
-      throw new Error('Authentication required. User must be signed in to create profile.');
-    }
-
-    console.log('Creating user profile for:', userId);
+    console.log('Creating user profile for:', auth.userId);
 
     // Validate input
     validateInput(input);
@@ -34,16 +34,16 @@ export const handler = async (event: CreateUserEvent): Promise<User> => {
 
     // Create default preferences
     const defaultPreferences: UserPreferences = {
-      theme: 'auto',
+      theme: 'AUTO',
       notifications: true,
-      locationSharing: 'hubs_only',
-      profileVisibility: 'public',
+      locationSharing: 'HUBS_ONLY',
+      profileVisibility: 'PUBLIC',
       isAnonymous: false,
     };
 
     // Create user object
     const user: User = {
-      userId,
+      userId: auth.userId,
       profile: {
         displayName: input.displayName.trim(),
         bio: input.bio?.trim(),
@@ -66,7 +66,7 @@ export const handler = async (event: CreateUserEvent): Promise<User> => {
 
     await docClient.send(putCommand);
 
-    console.log('User profile created successfully:', userId);
+    console.log('User profile created successfully:', auth.userId);
 
     return user;
 

@@ -27,6 +27,9 @@ export class UsersLambdaConstruct extends Construct {
       entryPath: 'lib/constructs/compute/lambda/functions/users/createUser/index.ts',
       description: 'Creates a new user profile after Cognito signup',
       nodeModules: ['uuid'],
+      envTable: {
+        USERS_TABLE_NAME: props.usersTable.tableName
+      },
       table: props.usersTable
     })
 

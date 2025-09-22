@@ -17,9 +17,9 @@ export interface User {
 }
 
 export interface UserPreferences {
-  theme: 'light' | 'dark' | 'auto';
+  theme: 'LIGHT' | 'DARK' | 'AUTO';
   notifications: boolean;
-  locationSharing: 'always' | 'hubs_only' | 'never';
-  profileVisibility: 'public' | 'friends' | 'private';
+  locationSharing: 'ALWAYS' | 'HUBS_ONLY' | 'NEVER';
+  profileVisibility: 'PUBLIC' | 'FRIENDS' | 'PRIVATE';
   isAnonymous: boolean;
 }

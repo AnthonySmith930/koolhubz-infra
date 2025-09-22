@@ -86,6 +86,7 @@ enum ProfileVisibility {
 
 input CreateUserInput {
   displayName: String!
+  userId: String
   bio: String
 }
 
