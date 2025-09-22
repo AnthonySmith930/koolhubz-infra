@@ -1,10 +1,6 @@
 export interface User {
   userId: string;
-  profile: {
-    displayName: string;
-    bio?: string;
-    friends?: string[];
-  };
+  profile: UserProfile;
   preferences: UserPreferences;
   joinedAt: string;
   currentHub?: string;
@@ -22,4 +18,10 @@ export interface UserPreferences {
   locationSharing: 'ALWAYS' | 'HUBS_ONLY' | 'NEVER';
   profileVisibility: 'PUBLIC' | 'FRIENDS' | 'PRIVATE';
   isAnonymous: boolean;
+}
+
+export interface UserProfile {
+  displayName: string;
+  bio?: string;
+  friends?: string[];
 }

@@ -55,8 +55,13 @@ export class KoolHubzStack extends cdk.Stack {
       getNearbyHubsFunction: this.hubsLambda.getNearbyHubsFunction,
       getHubFunction: this.hubsLambda.getHubFunction,
       deleteHubFunction: this.hubsLambda.deleteHubFunction,
-      createUserFunction: this.usersLambda.createUserFunction
+      createUserFunction: this.usersLambda.createUserFunction,
+      getUserProfileFunction: this.usersLambda.getUserProfileFunction
     });
+
+    const hubFunctions = {
+      
+    }
 
     // Tag all resources
     const baseTags = {

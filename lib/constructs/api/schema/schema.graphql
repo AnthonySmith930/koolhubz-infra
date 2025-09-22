@@ -116,6 +116,8 @@ type Query {
 
 # User queries
   getMe: User
+
+  getUserProfile(userId: ID!, testUserId: ID): UserProfile
 }
   
 type Mutation {

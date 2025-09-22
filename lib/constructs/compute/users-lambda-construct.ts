@@ -11,7 +11,7 @@ interface UsersLambdaConstructProps {
 
 export class UsersLambdaConstruct extends Construct {
   public readonly createUserFunction: lambda.Function;
-  public readonly getUserFunction: lambda.Function;
+  public readonly getUserProfileFunction: lambda.Function;
   public readonly updateUserFunction: lambda.Function;
   public readonly updateUserPreferencesFunction: lambda.Function;
 
@@ -33,17 +33,20 @@ export class UsersLambdaConstruct extends Construct {
       table: props.usersTable
     })
 
-    // this.getUserFunction = createLambdaFunction({
-    //   construct: this,
-    //   id: 'GetUserFunction',
-    //   timeoutDuration: 15,
-    //   stageName: props.stage,
-    //   functionName: 'GetUser',
-    //   entryPath: 'lib/constructs/compute/lambda/functions/users/getUser/index.ts',
-    //   description: 'Retrieves user data with privacy filtering',
-    //   table: props.usersTable,
-    //   readOnly: true
-    // })
+    this.getUserProfileFunction = createLambdaFunction({
+      construct: this,
+      id: 'GetUserProfileFunction',
+      timeoutDuration: 15,
+      stageName: props.stage,
+      functionName: 'GetUserProfile',
+      entryPath: 'lib/constructs/compute/lambda/functions/users/getUserProfile/index.ts',
+      description: 'Retrieves user data for given userId with privacy filtering',
+      envTable: {
+        USERS_TABLE_NAME: props.usersTable.tableName
+      },
+      table: props.usersTable,
+      readOnly: true
+    })
 
     // this.updateUserFunction = createLambdaFunction({
     //   construct: this,
@@ -74,11 +77,11 @@ export class UsersLambdaConstruct extends Construct {
       exportName: `KoolHubz-${props.stage}-CreateUserFunctionName`,
     });
 
-    // new cdk.CfnOutput(this, 'GetUserFunctionName', {
-    //   value: this.getUserFunction.functionName,
-    //   description: 'GetUser Lambda Function Name',
-    //   exportName: `KoolHubz-${props.stage}-GetUserFunctionName`,
-    // });
+    new cdk.CfnOutput(this, 'GetUserProfileFunctionName', {
+      value: this.getUserProfileFunction.functionName,
+      description: 'GetUserProfile Lambda Function Name',
+      exportName: `KoolHubz-${props.stage}-GetUserProfileFunctionName`,
+    });
 
     // new cdk.CfnOutput(this, 'UpdateUserFunctionName', {
     //   value: this.updateUserFunction.functionName,

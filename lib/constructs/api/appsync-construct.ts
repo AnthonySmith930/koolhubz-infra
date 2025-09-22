@@ -10,6 +10,7 @@ import getHubResolver from './resolvers/queries/getHubResolver';
 import deleteHubResolver from './resolvers/mutations/deleteHubResolver';
 import getNearbyHubsResolver from './resolvers/queries/getNearbyHubsResolver';
 import createUserResolver from './resolvers/mutations/createUserResolver';
+import getUserProfileResolver from './resolvers/queries/getUserProfileResolver';
 
 interface AppSyncConstructProps {
   stage: string;
@@ -21,6 +22,7 @@ interface AppSyncConstructProps {
   getHubFunction: lambda.Function;
   deleteHubFunction: lambda.Function;
   createUserFunction: lambda.Function;
+  getUserProfileFunction: lambda.Function;
 }
 
 export class AppSyncConstruct extends Construct {
@@ -35,6 +37,7 @@ export class AppSyncConstruct extends Construct {
 
   // User datasources
   public readonly createUserDataSource: appsync.LambdaDataSource; 
+  public readonly getUserProfileDataSource: appsync.LambdaDataSource; 
   
   constructor(scope: Construct, id: string, props: AppSyncConstructProps) {
     super(scope, id);
@@ -77,6 +80,7 @@ export class AppSyncConstruct extends Construct {
       xrayEnabled: props.stage === 'prod'
     });
 
+    // Hub data sources
     this.createHubDataSource = this.api.addLambdaDataSource(
       'CreateHubDataSource',
       props.createHubFunction,
@@ -113,12 +117,22 @@ export class AppSyncConstruct extends Construct {
       }
     );
 
+    // User data sources
     this.createUserDataSource = this.api.addLambdaDataSource(
       'CreateUserDataSource',
       props.createUserFunction,
       {
         name: 'CreateUserLambda',
         description: 'Lambda data source for user profile creation'
+      }
+    );
+
+    this.getUserProfileDataSource = this.api.addLambdaDataSource(
+      'GetUserProfileDataSource',
+      props.getUserProfileFunction,
+      {
+        name: 'GetUserProfileLambda',
+        description: 'Lambda data source to get user profile'
       }
     );
 
@@ -136,6 +150,7 @@ export class AppSyncConstruct extends Construct {
 
     // User resolvers
     createUserResolver(this, this.createUserDataSource, this.api)
+    getUserProfileResolver(this, this.getUserProfileDataSource, this.api)
   }
 
   private createOutputs(stage: string): void {

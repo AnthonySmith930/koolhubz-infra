@@ -1,6 +1,6 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb';
-import { User, UserPreferences } from '../../../../../../types/userTypes';
+import { User, UserPreferences } from '../../../../../../types/user';
 import { CreateUserInput, CreateUserEvent } from '../../../../../../types/createUserTypes';
 import { getAuthenticatedUser } from '../../../../../../helpers/getAuthenticatedUser';
 
