@@ -12,6 +12,7 @@ interface UsersLambdaConstructProps {
 export class UsersLambdaConstruct extends Construct {
   public readonly createUserFunction: lambda.Function;
   public readonly getUserProfileFunction: lambda.Function;
+  public readonly getMeFunction: lambda.Function;
   public readonly updateUserFunction: lambda.Function;
   public readonly updateUserPreferencesFunction: lambda.Function;
 
@@ -41,6 +42,21 @@ export class UsersLambdaConstruct extends Construct {
       functionName: 'GetUserProfile',
       entryPath: 'lib/constructs/compute/lambda/functions/users/getUserProfile/index.ts',
       description: 'Retrieves user data for given userId with privacy filtering',
+      envTable: {
+        USERS_TABLE_NAME: props.usersTable.tableName
+      },
+      table: props.usersTable,
+      readOnly: true
+    })
+
+    this.getMeFunction = createLambdaFunction({
+      construct: this,
+      id: 'GetMeFunction',
+      timeoutDuration: 15,
+      stageName: props.stage,
+      functionName: 'GetMe',
+      entryPath: 'lib/constructs/compute/lambda/functions/users/getMe/index.ts',
+      description: 'Retrieves user data for current signed in user',
       envTable: {
         USERS_TABLE_NAME: props.usersTable.tableName
       },
@@ -81,6 +97,12 @@ export class UsersLambdaConstruct extends Construct {
       value: this.getUserProfileFunction.functionName,
       description: 'GetUserProfile Lambda Function Name',
       exportName: `KoolHubz-${props.stage}-GetUserProfileFunctionName`,
+    });
+
+    new cdk.CfnOutput(this, 'GetMeFunctionName', {
+      value: this.getMeFunction.functionName,
+      description: 'GetMe Lambda Function Name',
+      exportName: `KoolHubz-${props.stage}-GetMeFunctionName`,
     });
 
     // new cdk.CfnOutput(this, 'UpdateUserFunctionName', {

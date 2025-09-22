@@ -11,6 +11,7 @@ import deleteHubResolver from './resolvers/mutations/deleteHubResolver';
 import getNearbyHubsResolver from './resolvers/queries/getNearbyHubsResolver';
 import createUserResolver from './resolvers/mutations/createUserResolver';
 import getUserProfileResolver from './resolvers/queries/getUserProfileResolver';
+import getMeResolver from './resolvers/queries/getMeResolver';
 
 interface AppSyncConstructProps {
   stage: string;
@@ -23,6 +24,7 @@ interface AppSyncConstructProps {
   deleteHubFunction: lambda.Function;
   createUserFunction: lambda.Function;
   getUserProfileFunction: lambda.Function;
+  getMeFunction: lambda.Function;
 }
 
 export class AppSyncConstruct extends Construct {
@@ -37,7 +39,8 @@ export class AppSyncConstruct extends Construct {
 
   // User datasources
   public readonly createUserDataSource: appsync.LambdaDataSource; 
-  public readonly getUserProfileDataSource: appsync.LambdaDataSource; 
+  public readonly getUserProfileDataSource: appsync.LambdaDataSource;
+  public readonly getMeDataSource: appsync.LambdaDataSource;
   
   constructor(scope: Construct, id: string, props: AppSyncConstructProps) {
     super(scope, id);
@@ -127,6 +130,15 @@ export class AppSyncConstruct extends Construct {
       }
     );
 
+    this.getMeDataSource = this.api.addLambdaDataSource(
+      'GetMeDataSource',
+      props.getMeFunction,
+      {
+        name: 'GetMeLambda',
+        description: 'Lambda data source to get user data'
+      }
+    )
+
     this.getUserProfileDataSource = this.api.addLambdaDataSource(
       'GetUserProfileDataSource',
       props.getUserProfileFunction,
@@ -151,6 +163,7 @@ export class AppSyncConstruct extends Construct {
     // User resolvers
     createUserResolver(this, this.createUserDataSource, this.api)
     getUserProfileResolver(this, this.getUserProfileDataSource, this.api)
+    getMeResolver(this, this.getMeDataSource, this.api)
   }
 
   private createOutputs(stage: string): void {

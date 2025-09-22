@@ -115,7 +115,7 @@ type Query {
   # searchHubs(query: String!, latitude: Float, longitude: Float): [Hub]
 
 # User queries
-  getMe: User
+  getMe(testUserId: ID): User
 
   getUserProfile(userId: ID!, testUserId: ID): UserProfile
 }

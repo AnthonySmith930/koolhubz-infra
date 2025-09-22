@@ -56,12 +56,9 @@ export class KoolHubzStack extends cdk.Stack {
       getHubFunction: this.hubsLambda.getHubFunction,
       deleteHubFunction: this.hubsLambda.deleteHubFunction,
       createUserFunction: this.usersLambda.createUserFunction,
-      getUserProfileFunction: this.usersLambda.getUserProfileFunction
+      getUserProfileFunction: this.usersLambda.getUserProfileFunction,
+      getMeFunction: this.usersLambda.getMeFunction
     });
-
-    const hubFunctions = {
-      
-    }
 
     // Tag all resources
     const baseTags = {
