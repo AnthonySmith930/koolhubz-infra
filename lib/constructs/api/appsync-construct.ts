@@ -12,6 +12,7 @@ import getNearbyHubsResolver from './resolvers/queries/getNearbyHubsResolver';
 import createUserResolver from './resolvers/mutations/createUserResolver';
 import getUserProfileResolver from './resolvers/queries/getUserProfileResolver';
 import getMeResolver from './resolvers/queries/getMeResolver';
+import updateProfileResolver from './resolvers/mutations/updateProfileResolver';
 
 interface AppSyncConstructProps {
   stage: string;
@@ -25,6 +26,7 @@ interface AppSyncConstructProps {
   createUserFunction: lambda.Function;
   getUserProfileFunction: lambda.Function;
   getMeFunction: lambda.Function;
+  updateProfileFunction: lambda.Function;
 }
 
 export class AppSyncConstruct extends Construct {
@@ -41,6 +43,7 @@ export class AppSyncConstruct extends Construct {
   public readonly createUserDataSource: appsync.LambdaDataSource; 
   public readonly getUserProfileDataSource: appsync.LambdaDataSource;
   public readonly getMeDataSource: appsync.LambdaDataSource;
+  public readonly updateProfileDataSource: appsync.LambdaDataSource;
   
   constructor(scope: Construct, id: string, props: AppSyncConstructProps) {
     super(scope, id);
@@ -148,6 +151,15 @@ export class AppSyncConstruct extends Construct {
       }
     );
 
+    this.updateProfileDataSource = this.api.addLambdaDataSource(
+      'UpdateProfileDataSource',
+      props.updateProfileFunction,
+      {
+        name: 'UpdateProfileLambda',
+        description: 'Lambda data source to update user profile'
+      }
+    );
+
     this.createResolvers()
 
     this.createOutputs(props.stage)
@@ -164,6 +176,7 @@ export class AppSyncConstruct extends Construct {
     createUserResolver(this, this.createUserDataSource, this.api)
     getUserProfileResolver(this, this.getUserProfileDataSource, this.api)
     getMeResolver(this, this.getMeDataSource, this.api)
+    updateProfileResolver(this, this.updateProfileDataSource, this.api)
   }
 
   private createOutputs(stage: string): void {

@@ -26,7 +26,7 @@ enum HubType {
 }
 
 input CreateHubInput {
-  userId: ID
+  testUserId: ID
   name: String!
   description: String!
   latitude: Float!
@@ -48,9 +48,8 @@ type User {
 }
 
 type UserProfile {
-  displayName: String!
+  displayName: String
   bio: String
-  friends: [String!]
 }
 
 type UserPreferences {
@@ -86,8 +85,8 @@ enum ProfileVisibility {
 
 input CreateUserInput {
   displayName: String!
-  userId: String
   bio: String
+  testUserId: ID # used only for testing in Dev/Staging
 }
 
 input UserPreferencesInput {
@@ -96,6 +95,12 @@ input UserPreferencesInput {
   locationSharing: LocationSharing
   profileVisibility: ProfileVisibility
   isAnonymous: Boolean
+}
+
+input UpdateProfileInput {
+  displayName: String
+  bio: String 
+  testUserId: ID # used only for testing in Dev/Staging
 }
 
 type Query {
@@ -124,13 +129,15 @@ type Mutation {
   # Hub mutations
   createHub(input: CreateHubInput!): Hub!
 
-  deleteHub(hubId: ID!, userId: ID): Boolean!
+  deleteHub(hubId: ID!, testUserId: ID): Boolean!
 
   # Will implement later:
   # updateHub(hubId: ID!, input: UpdateHubInput!): Hub!
 
   # User mutations
   createUser(input: CreateUserInput!): User!
+
+  updateProfile(input: UpdateProfileInput!): UserProfile!
 }
 
 type Subscription {

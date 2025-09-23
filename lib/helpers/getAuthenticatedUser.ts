@@ -8,13 +8,13 @@ export function getAuthenticatedUser(event: any, input?: any): AuthContext {
   const stage = process.env.STAGE!;
   
   // Security: Block test userId in production
-  if (input?.userId && stage === 'prod') {
+  if (input?.testUserId && stage === 'prod') {
     throw new Error('userId parameter not allowed in production');
   }
 
   // Get userId based on environment and auth method
   const userId = event.identity?.sub || 
-    (stage !== 'prod' ? input?.userId : null);
+    (stage !== 'prod' ? input?.testUserId : null);
 
   if (!userId) {
     throw new Error(stage === 'prod' 

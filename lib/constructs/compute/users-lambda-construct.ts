@@ -15,9 +15,14 @@ export class UsersLambdaConstruct extends Construct {
   public readonly getMeFunction: lambda.Function;
   public readonly updateUserFunction: lambda.Function;
   public readonly updateUserPreferencesFunction: lambda.Function;
+  public readonly updateProfileFunction: lambda.Function;
 
   constructor(scope: Construct, id: string, props: UsersLambdaConstructProps) {
     super(scope, id);
+
+    const envTableName = {
+      USERS_TABLE_NAME: props.usersTable.tableName
+    }
 
     this.createUserFunction = createLambdaFunction({
       construct: this,
@@ -28,9 +33,7 @@ export class UsersLambdaConstruct extends Construct {
       entryPath: 'lib/constructs/compute/lambda/functions/users/createUser/index.ts',
       description: 'Creates a new user profile after Cognito signup',
       nodeModules: ['uuid'],
-      envTable: {
-        USERS_TABLE_NAME: props.usersTable.tableName
-      },
+      envTableName,
       table: props.usersTable
     })
 
@@ -42,11 +45,21 @@ export class UsersLambdaConstruct extends Construct {
       functionName: 'GetUserProfile',
       entryPath: 'lib/constructs/compute/lambda/functions/users/getUserProfile/index.ts',
       description: 'Retrieves user data for given userId with privacy filtering',
-      envTable: {
-        USERS_TABLE_NAME: props.usersTable.tableName
-      },
+      envTableName,
       table: props.usersTable,
       readOnly: true
+    })
+
+    this.updateProfileFunction = createLambdaFunction({
+      construct: this,
+      id: 'UpdateProfileFunction',
+      timeoutDuration: 30,
+      stageName: props.stage,
+      functionName: 'UpdateProfile',
+      entryPath: 'lib/constructs/compute/lambda/functions/users/updateProfile/index.ts',
+      description: 'Updates user profiles and handles optimistic locking',
+      envTableName,
+      table: props.usersTable
     })
 
     this.getMeFunction = createLambdaFunction({
@@ -57,23 +70,10 @@ export class UsersLambdaConstruct extends Construct {
       functionName: 'GetMe',
       entryPath: 'lib/constructs/compute/lambda/functions/users/getMe/index.ts',
       description: 'Retrieves user data for current signed in user',
-      envTable: {
-        USERS_TABLE_NAME: props.usersTable.tableName
-      },
+      envTableName,
       table: props.usersTable,
       readOnly: true
     })
-
-    // this.updateUserFunction = createLambdaFunction({
-    //   construct: this,
-    //   id: 'UpdateUserFunction',
-    //   timeoutDuration: 30,
-    //   stageName: props.stage,
-    //   functionName: 'UpdateUser',
-    //   entryPath: 'lib/constructs/compute/lambda/functions/users/updateUser/index.ts',
-    //   description: 'Updates user profiles and handles optimistic locking',
-    //   table: props.usersTable
-    // })
 
     // this.updateUserPreferencesFunction = createLambdaFunction({
     //   construct: this,
@@ -105,11 +105,11 @@ export class UsersLambdaConstruct extends Construct {
       exportName: `KoolHubz-${props.stage}-GetMeFunctionName`,
     });
 
-    // new cdk.CfnOutput(this, 'UpdateUserFunctionName', {
-    //   value: this.updateUserFunction.functionName,
-    //   description: 'UpdateUser Lambda Function Name',
-    //   exportName: `KoolHubz-${props.stage}-UpdateUserFunctionName`,
-    // });
+    new cdk.CfnOutput(this, 'UpdateProfileFunctionName', {
+      value: this.updateProfileFunction.functionName,
+      description: 'UpdateProfile Lambda Function Name',
+      exportName: `KoolHubz-${props.stage}-UpdateProfileFunctionName`,
+    });
 
     // new cdk.CfnOutput(this, 'UpdateUserPreferencesFunctionName', {
     //   value: this.updateUserPreferencesFunction.functionName,

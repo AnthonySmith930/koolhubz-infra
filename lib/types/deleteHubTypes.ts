@@ -1,7 +1,7 @@
 export interface DeleteHubEvent {
   arguments: {
     hubId: string;
-    userId?: string;
+    testUserId?: string;
   };
   identity?: {
     sub: string;

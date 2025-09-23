@@ -17,7 +17,7 @@ export const handler = async (event: DeleteHubEvent): Promise<boolean> => {
 
   try {
     const { hubId } = event.arguments;
-    const userId = event.identity?.sub || event.arguments.userId;
+    const userId = event.identity?.sub || event.arguments.testUserId;
 
     // Validate input
     if (!hubId || hubId.trim().length === 0) {

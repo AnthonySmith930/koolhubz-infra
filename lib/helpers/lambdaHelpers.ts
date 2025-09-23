@@ -14,7 +14,7 @@ interface CreateLambdaFunctionArgs {
     functionName: string,
     entryPath: string,
     description: string,
-    envTable: {},
+    envTableName: {},
     table: dynamodb.Table,
     nodeModules?: string[],
     readOnly?: boolean
@@ -30,7 +30,7 @@ export function createLambdaFunction(args: CreateLambdaFunctionArgs) {
         entryPath,
         description,
         nodeModules = [],
-        envTable,
+        envTableName,
         table,
         readOnly = false
     } = args
@@ -43,7 +43,7 @@ export function createLambdaFunction(args: CreateLambdaFunctionArgs) {
         entry: path.resolve(process.cwd(), entryPath),
         description: description,
         environment: {
-            ...envTable,
+            ...envTableName,
             NODE_OPTIONS: '--enable-source-maps',
             STAGE: stageName,
         },

@@ -34,7 +34,7 @@ export class KoolHubzStack extends cdk.Stack {
       stage: props.stage
     });
 
-    // Make sure this line exists and comes BEFORE the AppSync creation
+    // Create lambdas before creating AppSync constructs --------------
     this.hubsLambda = new HubsLambdaConstruct(this, "HubsLambda", {
       stage: props.stage,
       hubsTable: this.hubsTable.table
@@ -44,6 +44,7 @@ export class KoolHubzStack extends cdk.Stack {
       stage: props.stage,
       usersTable: this.usersTable.table
     });
+    // ---------------------------------------------------------------
 
     // GraphQL API
     this.appSync = new AppSyncConstruct(this, "AppSync", {
@@ -57,7 +58,8 @@ export class KoolHubzStack extends cdk.Stack {
       deleteHubFunction: this.hubsLambda.deleteHubFunction,
       createUserFunction: this.usersLambda.createUserFunction,
       getUserProfileFunction: this.usersLambda.getUserProfileFunction,
-      getMeFunction: this.usersLambda.getMeFunction
+      getMeFunction: this.usersLambda.getMeFunction,
+      updateProfileFunction: this.usersLambda.updateProfileFunction
     });
 
     // Tag all resources
