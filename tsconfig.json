@@ -2,12 +2,10 @@
   "compilerOptions": {
     "target": "ES2022",
     "module": "NodeNext",
-    "outDir": "./build",           // All JS files go to build/
+    "outDir": "./build", // All JS files go to build/
     "rootDir": "./",
     "moduleResolution": "NodeNext",
-    "lib": [
-      "es2022"
-    ],
+    "lib": ["es2022"],
     "declaration": true,
     "strict": true,
     "noImplicitAny": true,
@@ -23,15 +21,7 @@
     "experimentalDecorators": true,
     "strictPropertyInitialization": false,
     "skipLibCheck": true,
-    "typeRoots": [
-      "./node_modules/@types"
-    ]
+    "typeRoots": ["./node_modules/@types"]
   },
-  "exclude": [
-    "node_modules",
-    "cdk.out",
-    "build",
-    "**/*.d.ts",
-    "**/*.js"
-  ]
+  "exclude": ["node_modules", "cdk.out", "build", "**/*.d.ts", "**/*.js"]
 }

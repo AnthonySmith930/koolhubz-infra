@@ -1,24 +1,24 @@
-import * as cdk from 'aws-cdk-lib';
-import * as lambda from 'aws-cdk-lib/aws-lambda';
-import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
-import { Construct } from 'constructs';
-import { createLambdaFunction } from './lambda/helpers/lambdaHelpers';
+import * as cdk from 'aws-cdk-lib'
+import * as lambda from 'aws-cdk-lib/aws-lambda'
+import * as dynamodb from 'aws-cdk-lib/aws-dynamodb'
+import { Construct } from 'constructs'
+import { createLambdaFunction } from './lambda/helpers/lambdaHelpers'
 
 interface UsersLambdaConstructProps {
-  stage: string;
-  usersTable: dynamodb.Table;
+  stage: string
+  usersTable: dynamodb.Table
 }
 
 export class UsersLambdaConstruct extends Construct {
-  public readonly createUserFunction: lambda.Function;
-  public readonly getUserProfileFunction: lambda.Function;
-  public readonly getMeFunction: lambda.Function;
-  public readonly updateUserFunction: lambda.Function;
-  public readonly updateUserPreferencesFunction: lambda.Function;
-  public readonly updateProfileFunction: lambda.Function;
+  public readonly createUserFunction: lambda.Function
+  public readonly getUserProfileFunction: lambda.Function
+  public readonly getMeFunction: lambda.Function
+  public readonly updateUserFunction: lambda.Function
+  public readonly updateUserPreferencesFunction: lambda.Function
+  public readonly updateProfileFunction: lambda.Function
 
   constructor(scope: Construct, id: string, props: UsersLambdaConstructProps) {
-    super(scope, id);
+    super(scope, id)
 
     const envTableName = {
       USERS_TABLE_NAME: props.usersTable.tableName
@@ -30,7 +30,8 @@ export class UsersLambdaConstruct extends Construct {
       timeoutDuration: 30,
       stageName: props.stage,
       functionName: 'CreateUser',
-      entryPath: 'lib/constructs/compute/lambda/functions/users/createUser/index.ts',
+      entryPath:
+        'lib/constructs/compute/lambda/functions/users/createUser/index.ts',
       description: 'Creates a new user profile after Cognito signup',
       nodeModules: ['uuid'],
       envTableName,
@@ -43,8 +44,10 @@ export class UsersLambdaConstruct extends Construct {
       timeoutDuration: 15,
       stageName: props.stage,
       functionName: 'GetUserProfile',
-      entryPath: 'lib/constructs/compute/lambda/functions/users/getUserProfile/index.ts',
-      description: 'Retrieves user data for given userId with privacy filtering',
+      entryPath:
+        'lib/constructs/compute/lambda/functions/users/getUserProfile/index.ts',
+      description:
+        'Retrieves user data for given userId with privacy filtering',
       envTableName,
       table: props.usersTable,
       readOnly: true
@@ -56,7 +59,8 @@ export class UsersLambdaConstruct extends Construct {
       timeoutDuration: 30,
       stageName: props.stage,
       functionName: 'UpdateProfile',
-      entryPath: 'lib/constructs/compute/lambda/functions/users/updateProfile/index.ts',
+      entryPath:
+        'lib/constructs/compute/lambda/functions/users/updateProfile/index.ts',
       description: 'Updates user profiles and handles optimistic locking',
       envTableName,
       table: props.usersTable
@@ -90,26 +94,26 @@ export class UsersLambdaConstruct extends Construct {
     new cdk.CfnOutput(this, 'CreateUserFunctionName', {
       value: this.createUserFunction.functionName,
       description: 'CreateUser Lambda Function Name',
-      exportName: `KoolHubz-${props.stage}-CreateUserFunctionName`,
-    });
+      exportName: `KoolHubz-${props.stage}-CreateUserFunctionName`
+    })
 
     new cdk.CfnOutput(this, 'GetUserProfileFunctionName', {
       value: this.getUserProfileFunction.functionName,
       description: 'GetUserProfile Lambda Function Name',
-      exportName: `KoolHubz-${props.stage}-GetUserProfileFunctionName`,
-    });
+      exportName: `KoolHubz-${props.stage}-GetUserProfileFunctionName`
+    })
 
     new cdk.CfnOutput(this, 'GetMeFunctionName', {
       value: this.getMeFunction.functionName,
       description: 'GetMe Lambda Function Name',
-      exportName: `KoolHubz-${props.stage}-GetMeFunctionName`,
-    });
+      exportName: `KoolHubz-${props.stage}-GetMeFunctionName`
+    })
 
     new cdk.CfnOutput(this, 'UpdateProfileFunctionName', {
       value: this.updateProfileFunction.functionName,
       description: 'UpdateProfile Lambda Function Name',
-      exportName: `KoolHubz-${props.stage}-UpdateProfileFunctionName`,
-    });
+      exportName: `KoolHubz-${props.stage}-UpdateProfileFunctionName`
+    })
 
     // new cdk.CfnOutput(this, 'UpdateUserPreferencesFunctionName', {
     //   value: this.updateUserPreferencesFunction.functionName,

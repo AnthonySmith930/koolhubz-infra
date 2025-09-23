@@ -7,6 +7,11 @@
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
+    "lint": "ESLINT_USE_FLAT_CONFIG=true eslint \"./lib/**/*.ts\" \"./bin/**/*.ts\"",
+    "lint:fix": "ESLINT_USE_FLAT_CONFIG=true eslint \"./lib/**/*.ts\" \"./bin/**/*.ts\"  --fix",
+    "lint:tests": "ESLINT_USE_FLAT_CONFIG=true eslint \"./test/**/*.ts\"",
+    "format": "prettier --write \"lib/**/*.ts\" \"./bin/**/*.ts\"",
+    "format:check": "prettier --check \"index.ts\" \"lib/**/*.ts\" \"*.json\"",
     "test": "jest",
     "cdk": "cdk"
   },
@@ -25,10 +30,16 @@
     "@aws-sdk/client-dynamodb": "^3.893.0",
     "@aws-sdk/lib-dynamodb": "^3.893.0",
     "@types/ngeohash": "^0.6.8",
+    "@typescript-eslint/eslint-plugin": "^8.42.0",
+    "@typescript-eslint/parser": "^8.42.0",
     "aws-cdk-lib": "2.211.0",
     "constructs": "^10.0.0",
+    "eslint": "^8.57.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
     "geolib": "^3.3.4",
     "ngeohash": "^0.6.3",
+    "prettier": "^3.6.2",
     "uuid": "^13.0.0"
   }
 }
