@@ -13,6 +13,7 @@ import createUserResolver from './resolvers/mutations/createUserResolver'
 import getUserProfileResolver from './resolvers/queries/getUserProfileResolver'
 import getMeResolver from './resolvers/queries/getMeResolver'
 import updateProfileResolver from './resolvers/mutations/updateProfileResolver'
+import updateUserPreferencesResolver from './resolvers/mutations/updateUserPreferencesResolver'
 
 interface AppSyncConstructProps {
   stage: string
@@ -27,6 +28,7 @@ interface AppSyncConstructProps {
   getUserProfileFunction: lambda.Function
   getMeFunction: lambda.Function
   updateProfileFunction: lambda.Function
+  updateUserPreferencesFunction: lambda.Function
 }
 
 export class AppSyncConstruct extends Construct {
@@ -44,6 +46,7 @@ export class AppSyncConstruct extends Construct {
   public readonly getUserProfileDataSource: appsync.LambdaDataSource
   public readonly getMeDataSource: appsync.LambdaDataSource
   public readonly updateProfileDataSource: appsync.LambdaDataSource
+  public readonly updateUserPreferencesDataSource: appsync.LambdaDataSource
 
   constructor(scope: Construct, id: string, props: AppSyncConstructProps) {
     super(scope, id)
@@ -161,6 +164,15 @@ export class AppSyncConstruct extends Construct {
         description: 'Lambda data source to update user profile'
       }
     )
+    
+    this.updateUserPreferencesDataSource = this.api.addLambdaDataSource(
+      'UpdateUserPreferencesDataSource',
+      props.updateUserPreferencesFunction,
+      {
+        name: 'UpdateUserPreferencesLambda',
+        description: 'Lambda data source to update user preferences'
+      }
+    )
 
     this.createResolvers()
 
@@ -179,10 +191,10 @@ export class AppSyncConstruct extends Construct {
     getUserProfileResolver(this, this.getUserProfileDataSource, this.api)
     getMeResolver(this, this.getMeDataSource, this.api)
     updateProfileResolver(this, this.updateProfileDataSource, this.api)
+    updateUserPreferencesResolver(this, this.updateUserPreferencesDataSource, this.api)
   }
 
   private createOutputs(stage: string): void {
-    // Outputs for the mobile app and testing
     new cdk.CfnOutput(this, 'GraphQLApiEndpoint', {
       value: this.api.graphqlUrl,
       description: 'GraphQL API Endpoint',

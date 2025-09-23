@@ -13,11 +13,37 @@ export interface User {
 }
 
 export interface UserPreferences {
-  theme: 'LIGHT' | 'DARK' | 'AUTO'
-  notifications: boolean
-  locationSharing: 'ALWAYS' | 'HUBS_ONLY' | 'NEVER'
-  profileVisibility: 'PUBLIC' | 'FRIENDS' | 'PRIVATE'
-  isAnonymous: boolean
+  theme: string;
+  notifications: boolean;
+  locationSharing: string;
+  profileVisibility: string;
+  isAnonymous: boolean;
+}
+
+export interface UpdateUserPreferencesInput {
+  testUserId?: string,
+  theme?: 'LIGHT' | 'DARK' | 'AUTO'
+  notifications?: boolean
+  locationSharing?: 'ON' | 'OFF'
+  profileVisibility?: 'PUBLIC' | 'FRIENDS' | 'PRIVATE'
+  isAnonymous?: boolean
+}
+
+export interface UpdateUserPreferencesEvent {
+  info: {
+    fieldName: string;
+    parentTypeName: string;
+  };
+  arguments: {
+    input: UpdateUserPreferencesInput;
+  };
+  identity?: {
+    sub: string; // Cognito user ID
+    username?: string;
+  };
+  request: {
+    headers: Record<string, string>;
+  };
 }
 
 export interface UserProfile {
@@ -89,9 +115,9 @@ export interface GetUserProfileEvent {
 }
 
 export interface UpdateProfileInput {
+  testUserId?: string // For API key testing
   displayName?: string
   bio?: string
-  testUserId?: string // For API key testing
 }
 
 export interface UpdateProfileEvent {

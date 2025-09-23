@@ -1,4 +1,3 @@
-
 # Hub types ---------------------------------------------
 type Hub {
   hubId: ID!
@@ -72,9 +71,8 @@ enum Theme {
 }
 
 enum LocationSharing {
-  ALWAYS
-  HUBS_ONLY
-  NEVER
+  OFF
+  ON
 }
 
 enum ProfileVisibility {
@@ -89,7 +87,8 @@ input CreateUserInput {
   testUserId: ID # used only for testing in Dev/Staging
 }
 
-input UserPreferencesInput {
+input UpdateUserPreferencesInput {
+  testUserId: ID
   theme: Theme
   notifications: Boolean
   locationSharing: LocationSharing
@@ -138,6 +137,8 @@ type Mutation {
   createUser(input: CreateUserInput!): User!
 
   updateProfile(input: UpdateProfileInput!): UserProfile!
+
+  updateUserPreferences(input: UpdateUserPreferencesInput!): UserPreferences!
 }
 
 type Subscription {
@@ -146,6 +147,3 @@ type Subscription {
   # onHubUpdated(hubId: ID!): Hub @aws_subscribe(mutations: ["updateHub"])
   # onHubDeleted: ID @aws_subscribe(mutations: ["deleteHub"])
 }
-
-# AWS-specific scalar types
-scalar AWSDateTime

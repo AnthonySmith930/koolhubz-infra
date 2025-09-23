@@ -14,8 +14,8 @@ export class UsersLambdaConstruct extends Construct {
   public readonly getUserProfileFunction: lambda.Function
   public readonly getMeFunction: lambda.Function
   public readonly updateUserFunction: lambda.Function
-  public readonly updateUserPreferencesFunction: lambda.Function
   public readonly updateProfileFunction: lambda.Function
+  public readonly updateUserPreferencesFunction: lambda.Function
 
   constructor(scope: Construct, id: string, props: UsersLambdaConstructProps) {
     super(scope, id)
@@ -79,16 +79,17 @@ export class UsersLambdaConstruct extends Construct {
       readOnly: true
     })
 
-    // this.updateUserPreferencesFunction = createLambdaFunction({
-    //   construct: this,
-    //   id: 'UpdateUserPreferencesFunction',
-    //   timeoutDuration: 15,
-    //   stageName: props.stage,
-    //   functionName: 'UpdateUserPreferences',
-    //   entryPath: 'lib/constructs/compute/lambda/functions/users/updateUserPreferences/index.ts',
-    //   description: 'Updates user preferences quickly without full profile validation',
-    //   table: props.usersTable
-    // })
+    this.updateUserPreferencesFunction = createLambdaFunction({
+      construct: this,
+      id: 'UpdateUserPreferencesFunction',
+      timeoutDuration: 30,
+      stageName: props.stage,
+      functionName: 'UpdateUserPreferences',
+      entryPath: 'lib/constructs/compute/lambda/functions/users/updateUserPreferences/index.ts',
+      description: 'Updates user preferences quickly without full profile validation',
+      envTableName,
+      table: props.usersTable
+    })
 
     // Outputs for debugging and integration
     new cdk.CfnOutput(this, 'CreateUserFunctionName', {
@@ -115,10 +116,10 @@ export class UsersLambdaConstruct extends Construct {
       exportName: `KoolHubz-${props.stage}-UpdateProfileFunctionName`
     })
 
-    // new cdk.CfnOutput(this, 'UpdateUserPreferencesFunctionName', {
-    //   value: this.updateUserPreferencesFunction.functionName,
-    //   description: 'UpdateUserPreferences Lambda Function Name',
-    //   exportName: `KoolHubz-${props.stage}-UpdateUserPreferencesFunctionName`,
-    // });
+    new cdk.CfnOutput(this, 'UpdateUserPreferencesFunctionName', {
+      value: this.updateUserPreferencesFunction.functionName,
+      description: 'UpdateUserPreferences Lambda Function Name',
+      exportName: `KoolHubz-${props.stage}-UpdateUserPreferencesFunctionName`,
+    });
   }
 }

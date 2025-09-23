@@ -40,7 +40,7 @@ export const handler = async (event: CreateUserEvent): Promise<User> => {
     const defaultPreferences: UserPreferences = {
       theme: 'AUTO',
       notifications: true,
-      locationSharing: 'HUBS_ONLY',
+      locationSharing: 'ON',
       profileVisibility: 'PUBLIC',
       isAnonymous: false
     }
