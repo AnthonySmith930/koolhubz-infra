@@ -1,8 +1,7 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, GetCommand } from '@aws-sdk/lib-dynamodb';
-import { getAuthenticatedUser } from '../../../../../../helpers/getAuthenticatedUser';
-import { GetMeEvent } from '../../../../../../types/getMeTypes';
-import { User } from '../../../../../../types/user';
+import { getAuthenticatedUser } from '../../../helpers/getAuthenticatedUser';
+import { User, GetMeEvent } from '../../../types/userTypes';
 
 // Initialize DynamoDB client
 const ddbClient = new DynamoDBClient({});

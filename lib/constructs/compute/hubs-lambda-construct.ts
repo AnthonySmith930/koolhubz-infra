@@ -2,7 +2,7 @@ import * as cdk from 'aws-cdk-lib';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import { Construct } from 'constructs';
-import { createLambdaFunction } from '../../helpers/lambdaHelpers';
+import { createLambdaFunction } from './lambda/helpers/lambdaHelpers';
 
 interface HubsLambdaConstructProps {
   stage: string;

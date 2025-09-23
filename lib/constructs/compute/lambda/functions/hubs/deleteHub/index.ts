@@ -1,7 +1,6 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, GetCommand, DeleteCommand } from '@aws-sdk/lib-dynamodb';
-import { DeleteHubEvent } from '../../../../../../types/deleteHubTypes';
-import { Hub } from '../../../../../../types/hub';
+import { Hub, DeleteHubEvent } from '../../../types/hubTypes';
 
 // Initialize DynamoDB client
 const ddbClient = new DynamoDBClient({});
