@@ -5,6 +5,7 @@ import {
   DeleteCommand
 } from '@aws-sdk/lib-dynamodb'
 import { Hub, DeleteHubEvent } from '../../../types/hubTypes'
+import { getAuthenticatedUser } from '../../../helpers/getAuthenticatedUser'
 
 // Initialize DynamoDB client
 const ddbClient = new DynamoDBClient({})
@@ -20,17 +21,13 @@ export const handler = async (event: DeleteHubEvent): Promise<boolean> => {
 
   try {
     const { hubId } = event.arguments
-    const userId = event.identity?.sub || event.arguments.testUserId
+    const input = event.arguments
+    const auth = getAuthenticatedUser(event, input)
+    const userId = auth.userId
 
     // Validate input
     if (!hubId || hubId.trim().length === 0) {
       throw new Error('Hub ID is required')
-    }
-
-    if (!userId) {
-      throw new Error(
-        'User identification required. Either authenticate with Cognito or provide userId parameter.'
-      )
     }
 
     console.log(`Attempting to delete hub: ${hubId} by user: ${userId}`)

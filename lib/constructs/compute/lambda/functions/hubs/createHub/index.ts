@@ -1,6 +1,7 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
 import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb'
 import { Hub, CreateHubEvent, CreateHubInput } from '../../../types/hubTypes'
+import { getAuthenticatedUser } from '../../../helpers/getAuthenticatedUser'
 
 // Initialize DynamoDB client
 const ddbClient = new DynamoDBClient({})
@@ -20,14 +21,8 @@ export const handler = async (event: CreateHubEvent): Promise<Hub> => {
     const { encode: geohashEncode } = ngeohash.default
 
     const input = event.arguments.input
-
-    // Hybrid authentication: Use Cognito user ID if available, otherwise use provided userId
-    const userId = event.identity?.sub || input.userId
-    if (!userId) {
-      throw new Error(
-        'User identification required. Either authenticate with Cognito or provide userId parameter.'
-      )
-    }
+    const auth = getAuthenticatedUser(event, input)
+    const userId = auth.userId
 
     console.log('Creating hub for user:', userId)
 
@@ -52,6 +47,7 @@ export const handler = async (event: CreateHubEvent): Promise<Hub> => {
       longitude: input.longitude,
       radius: input.radius,
       hubType: input.hubType,
+      memberCount: 0,
       createdBy: userId,
       createdAt: now,
       updatedAt: now,

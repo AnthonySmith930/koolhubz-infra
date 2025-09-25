@@ -88,13 +88,13 @@ async function processStreamRecord(
   if (eventName === 'INSERT') {
     // New member joined
     const newImage = record.dynamodb?.NewImage
-    if (newImage?.hubId?.S && newImage?.isActive?.BOOL === true) {
+    if (newImage?.hubId?.S) {
       return { hubId: newImage.hubId.S, delta: 1 }
     }
   } else if (eventName === 'REMOVE') {
     // Member left/removed
     const oldImage = record.dynamodb?.OldImage
-    if (oldImage?.hubId?.S && oldImage?.isActive?.BOOL === true) {
+    if (oldImage?.hubId?.S) {
       return { hubId: oldImage.hubId.S, delta: -1 }
     }
   }

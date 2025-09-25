@@ -21,10 +21,8 @@ export const handler = async (event: GetMeEvent): Promise<User | null> => {
   console.log('GetMe Lambda invoked:', JSON.stringify(event, null, 2))
 
   try {
-    const { testUserId } = event.arguments
-
-    // Get authenticated user (required for this endpoint)
-    const auth = getAuthenticatedUser(event, { userId: testUserId })
+    const input = event.arguments
+    const auth = getAuthenticatedUser(event, input)
     const userId = auth.userId
 
     console.log(

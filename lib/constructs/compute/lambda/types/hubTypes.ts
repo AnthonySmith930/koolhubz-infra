@@ -6,6 +6,7 @@ export interface Hub {
   longitude: number
   radius: number
   hubType: 'PUBLIC' | 'PRIVATE'
+  memberCount: number
   createdBy: string
   createdAt: string
   updatedAt: string
@@ -18,7 +19,7 @@ export interface HubWithDistance extends Hub {
 }
 
 export interface CreateHubInput {
-  userId?: string // Optional for hybrid auth
+  testUserId?: string // Optional for hybrid auth
   name: string
   description: string
   latitude: number

@@ -10,13 +10,13 @@ type Hub {
   createdAt: AWSDateTime!
   description: String!
   isActive: Boolean!
+  memberCount: Int!
   
   # Will implement later:
   # markers: [HubMarker]
   # inviteCode: String
   # qrCode: String
   # polygon: String
-  # memberCount: Int
 }
 
 enum HubType {

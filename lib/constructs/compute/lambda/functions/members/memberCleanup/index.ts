@@ -80,8 +80,7 @@ async function performMemberCleanup(): Promise<{ membersRemoved: number, hubsAff
         TableName: MEMBERS_TABLE_NAME,
         FilterExpression: 'lastSeen < :cutoff',
         ExpressionAttributeValues: {
-          ':cutoff': cutoffISO,
-          ':active': true
+          ':cutoff': cutoffISO
         },
         ExclusiveStartKey: lastEvaluatedKey,
         Limit: 25 // Process in small batches to avoid timeouts
