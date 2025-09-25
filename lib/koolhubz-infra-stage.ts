@@ -3,7 +3,8 @@ import { Construct } from 'constructs'
 import { KoolHubzStack } from './koolhubz-infra-stack'
 
 export interface KoolHubzStageProps extends cdk.StageProps {
-  stageName: string
+  stageName: string,
+  alertEmails?: string[]
 }
 
 export class KoolHubzStage extends cdk.Stage {
@@ -11,7 +12,8 @@ export class KoolHubzStage extends cdk.Stage {
     super(scope, id, props)
 
     new KoolHubzStack(this, 'KoolHubzStack', {
-      stage: props.stageName
+      stage: props.stageName,
+      alertEmails: props.alertEmails
     })
   }
 }

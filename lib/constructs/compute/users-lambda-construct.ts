@@ -20,8 +20,10 @@ export class UsersLambdaConstruct extends Construct {
   constructor(scope: Construct, id: string, props: UsersLambdaConstructProps) {
     super(scope, id)
 
-    const envTableName = {
-      USERS_TABLE_NAME: props.usersTable.tableName
+    const lambdaEnvironment = {
+      USERS_TABLE_NAME: props.usersTable.tableName,
+      NODE_OPTIONS: '--enable-source-maps',
+      STAGE: props.stage
     }
 
     this.createUserFunction = createLambdaFunction({
@@ -34,7 +36,7 @@ export class UsersLambdaConstruct extends Construct {
         'lib/constructs/compute/lambda/functions/users/createUser/index.ts',
       description: 'Creates a new user profile after Cognito signup',
       nodeModules: ['uuid'],
-      envTableName,
+      environment: lambdaEnvironment,
       table: props.usersTable
     })
 
@@ -48,7 +50,7 @@ export class UsersLambdaConstruct extends Construct {
         'lib/constructs/compute/lambda/functions/users/getUserProfile/index.ts',
       description:
         'Retrieves user data for given userId with privacy filtering',
-      envTableName,
+      environment: lambdaEnvironment,
       table: props.usersTable,
       readOnly: true
     })
@@ -62,7 +64,7 @@ export class UsersLambdaConstruct extends Construct {
       entryPath:
         'lib/constructs/compute/lambda/functions/users/updateProfile/index.ts',
       description: 'Updates user profiles and handles optimistic locking',
-      envTableName,
+      environment: lambdaEnvironment,
       table: props.usersTable
     })
 
@@ -74,7 +76,7 @@ export class UsersLambdaConstruct extends Construct {
       functionName: 'GetMe',
       entryPath: 'lib/constructs/compute/lambda/functions/users/getMe/index.ts',
       description: 'Retrieves user data for current signed in user',
-      envTableName,
+      environment: lambdaEnvironment,
       table: props.usersTable,
       readOnly: true
     })
@@ -87,7 +89,7 @@ export class UsersLambdaConstruct extends Construct {
       functionName: 'UpdateUserPreferences',
       entryPath: 'lib/constructs/compute/lambda/functions/users/updateUserPreferences/index.ts',
       description: 'Updates user preferences quickly without full profile validation',
-      envTableName,
+      environment: lambdaEnvironment,
       table: props.usersTable
     })
 

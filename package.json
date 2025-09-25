@@ -27,8 +27,10 @@
   },
   "dependencies": {
     "@aws-appsync/utils": "^2.0.3",
+    "@aws-sdk/client-cloudwatch": "^3.896.0",
     "@aws-sdk/client-dynamodb": "^3.893.0",
     "@aws-sdk/lib-dynamodb": "^3.893.0",
+    "@types/aws-lambda": "^8.10.152",
     "@types/ngeohash": "^0.6.8",
     "@typescript-eslint/eslint-plugin": "^8.42.0",
     "@typescript-eslint/parser": "^8.42.0",

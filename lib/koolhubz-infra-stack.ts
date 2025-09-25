@@ -6,9 +6,12 @@ import { HubsLambdaConstruct } from './constructs/compute/hubs-lambda-construct'
 import { UsersLambdaConstruct } from './constructs/compute/users-lambda-construct'
 import { AppSyncConstruct } from './constructs/api/appsync-construct'
 import { UsersTableConstruct } from './constructs/data/users-table-construct'
+import { MembersTableConstruct } from './constructs/data/members-table-construct'
+import { MonitoringConstruct } from './constructs/foundation/monitoring-construct'
 
 interface KoolHubzStackProps extends cdk.StackProps {
-  stage: string
+  stage: string,
+  alertEmails?: string[]
 }
 
 export class KoolHubzStack extends cdk.Stack {
@@ -18,6 +21,7 @@ export class KoolHubzStack extends cdk.Stack {
   public readonly hubsLambda: HubsLambdaConstruct
   public readonly usersLambda: UsersLambdaConstruct
   public readonly usersTable: UsersTableConstruct
+  public readonly membersTable: MembersTableConstruct
 
   constructor(scope: Construct, id: string, props: KoolHubzStackProps) {
     super(scope, id, props)
@@ -32,6 +36,12 @@ export class KoolHubzStack extends cdk.Stack {
 
     this.usersTable = new UsersTableConstruct(this, 'UsersTable', {
       stage: props.stage
+    })
+
+    this.membersTable = new MembersTableConstruct(this, 'MembersTable', {
+      stage: props.stage,
+      hubsTable: this.hubsTable.table,
+      alertEmails: props.alertEmails
     })
 
     // Create lambdas before creating AppSync constructs ---------------

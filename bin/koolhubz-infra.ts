@@ -10,7 +10,8 @@ new KoolHubzStage(app, 'Dev', {
     account: process.env.CDK_DEFAULT_ACCOUNT,
     region: process.env.CDK_DEFAULT_REGION
   },
-  stageName: 'dev'
+  stageName: 'dev',
+  alertEmails: ['antsmithdev@gmail.com'] // TODO: change this to proper emails when they are ready
 })
 
 // Staging stage

@@ -14,12 +14,15 @@ interface CreateLambdaFunctionArgs {
   functionName: string
   entryPath: string
   description: string
-  envTableName: {}
+  environment: {}
   table: dynamodb.Table
+  memorySize?: number
   nodeModules?: string[]
   readOnly?: boolean
 }
 
+// This helper is primarily used for lambda resolvers.
+// Lambdas with different settings and permissions should be created separately
 export function createLambdaFunction(args: CreateLambdaFunctionArgs) {
   const {
     construct,
@@ -30,23 +33,20 @@ export function createLambdaFunction(args: CreateLambdaFunctionArgs) {
     entryPath,
     description,
     nodeModules = [],
-    envTableName,
+    environment,
     table,
+    memorySize = 256,
     readOnly = false
   } = args
 
   const newFunction = new nodejs.NodejsFunction(construct, id, {
     runtime: lambda.Runtime.NODEJS_20_X,
     timeout: cdk.Duration.seconds(timeoutDuration),
-    memorySize: 256,
+    memorySize,
     functionName: `KoolHubz-${stageName}-${functionName}`,
     entry: path.resolve(process.cwd(), entryPath),
     description,
-    environment: {
-      ...envTableName,
-      NODE_OPTIONS: '--enable-source-maps',
-      STAGE: stageName
-    },
+    environment,
     retryAttempts: 2,
     bundling: {
       minify: stageName === 'prod',
