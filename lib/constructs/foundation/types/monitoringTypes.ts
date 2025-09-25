@@ -1,52 +1,50 @@
-import { Duration, aws_lambda } from 'aws-cdk-lib'
-import { Metric, ComparisonOperator, TreatMissingData} from 'aws-cdk-lib/aws-cloudwatch'
+import * as cloudwatch from 'aws-cdk-lib/aws-cloudwatch'
+import * as lambda from 'aws-cdk-lib/aws-lambda'
 
-export interface MetricConfig {
+export interface CustomMetric {
   namespace: string
   metricName: string
   statistic?: string
-  period?: Duration
-  label?: string
+  unit?: cloudwatch.Unit
 }
 
-export interface AlarmConfig {
+export interface DashboardWidget {
+  title: string
+  metricNames: string[]
+  namespace?: string
+}
+
+interface AlarmConfig {
   name: string
   description: string
   metricName: string
+  namespace?: string
   threshold: number
-  evaluationPeriods?: number
-  comparisonOperator?: ComparisonOperator
-  treatMissingData?: TreatMissingData
-}
-
-export interface DashboardWidgetConfig {
-  title: string
-  metricNames: string[]
-  width?: number
-  height?: number
-  type?: 'line' | 'number'
+  evaluationPeriods: number
+  comparisonOperator?: cloudwatch.ComparisonOperator
+  statistic?: string
+  treatMissingData?: cloudwatch.TreatMissingData
 }
 
 export interface MonitoringConstructProps {
   stage: string
-  serviceName: string // e.g., 'MemberCount', 'HubOperations', 'UserAuth'
-  
-  // Metrics to create
-  customMetrics?: MetricConfig[]
-  
-  // Lambda function to monitor (optional)
-  lambdaFunction?: aws_lambda.Function
-  
-  // Alarms to create
-  alarms?: AlarmConfig[]
-  
-  // Dashboard widgets
-  dashboardWidgets?: DashboardWidgetConfig[]
-  
-  // SNS configuration
+  serviceName: string
   enableSnsAlerts?: boolean
   alertEmails?: string[]
-  
-  // Dashboard configuration
   createDashboard?: boolean
+
+  // Lambda functions to monitor
+  functions?: Array<{
+    function: lambda.Function
+    id: string
+  }>
+
+  // Custom metrics specific to this service
+  customMetrics?: CustomMetric[]
+
+  // Custom dashboard widgets
+  dashboardWidgets?: DashboardWidget[]
+
+  // Custom alarms
+  alarms?: AlarmConfig[]
 }
