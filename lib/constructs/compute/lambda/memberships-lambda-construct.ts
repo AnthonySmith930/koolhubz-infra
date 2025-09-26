@@ -12,6 +12,7 @@ interface MembershipsLambdaConstructProps {
 
 export class MembershipsLambdaConstruct extends Construct {
   public readonly addMemberFunction: lambda.Function
+  public readonly removeMemberFunction: lambda.Function
 
   constructor(
     scope: Construct,
@@ -32,8 +33,26 @@ export class MembershipsLambdaConstruct extends Construct {
       description:
         'Adds a user to a hub with validation and duplicate checking',
       environment: {
-        MEMBERSHIP_TABLE_NAME: props.membershipsTable.tableName,
+        MEMBERSHIPS_TABLE_NAME: props.membershipsTable.tableName,
         HUBS_TABLE_NAME: props.hubsTable.tableName,
+        NODE_OPTIONS: '--enable-source-maps',
+        STAGE: props.stage
+      },
+      table: props.membershipsTable // Helper grants read/write permissions
+    })
+
+    // RemoveMembership Lambda Function
+    this.removeMemberFunction = createLambdaFunction({
+      construct: this,
+      id: 'RemoveMemberFunction',
+      timeoutDuration: 30,
+      stageName: props.stage,
+      functionName: 'RemoveMember',
+      entryPath:
+        'lib/constructs/compute/lambda/functions/memberships/removeMember/index.ts',
+      description: 'Removes a user from a hub with validation and cleanup',
+      environment: {
+        MEMBERSHIPS_TABLE_NAME: props.membershipsTable.tableName,
         NODE_OPTIONS: '--enable-source-maps',
         STAGE: props.stage
       },
@@ -54,6 +73,18 @@ export class MembershipsLambdaConstruct extends Construct {
       value: this.addMemberFunction.functionArn,
       description: 'AddMember Lambda Function ARN',
       exportName: `KoolHubz-${props.stage}-AddMemberFunctionArn`
+    })
+
+    new cdk.CfnOutput(this, 'RemoveMembershipFunctionName', {
+      value: this.removeMemberFunction.functionName,
+      description: 'RemoveMembership Lambda Function Name',
+      exportName: `KoolHubz-${props.stage}-RemoveMembershipFunctionName`
+    })
+
+    new cdk.CfnOutput(this, 'RemoveMemberFunctionArn', {
+      value: this.removeMemberFunction.functionArn,
+      description: 'RemoveMember Lambda Function ARN',
+      exportName: `KoolHubz-${props.stage}-RemoveMemberFunctionArn`
     })
   }
 }

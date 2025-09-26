@@ -15,6 +15,7 @@ import getMeResolver from './resolvers/queries/users/getMeResolver'
 import updateProfileResolver from './resolvers/mutations/users/updateProfileResolver'
 import updateUserPreferencesResolver from './resolvers/mutations/users/updateUserPreferencesResolver'
 import addMemberResolver from './resolvers/mutations/memberships/addMemberResolver'
+import removeMemberResolver from './resolvers/mutations/memberships/removeMemberResolver'
 
 interface AppSyncConstructProps {
   stage: string
@@ -31,6 +32,7 @@ interface AppSyncConstructProps {
   updateProfileFunction: lambda.Function
   updateUserPreferencesFunction: lambda.Function
   addMemberFunction: lambda.Function
+  removeMemberFunction: lambda.Function
 }
 
 export class AppSyncConstruct extends Construct {
@@ -52,6 +54,7 @@ export class AppSyncConstruct extends Construct {
 
   // Member datasources
   public readonly addMemberDataSource: appsync.LambdaDataSource
+  public readonly removeMemberDataSource: appsync.LambdaDataSource
 
   constructor(scope: Construct, id: string, props: AppSyncConstructProps) {
     super(scope, id)
@@ -189,6 +192,15 @@ export class AppSyncConstruct extends Construct {
       }
     )
 
+    this.removeMemberDataSource = this.api.addLambdaDataSource(
+      'RemoveMemberDataSource',
+      props.removeMemberFunction,
+      {
+        name: 'RemoveMemberLambda',
+        description: 'Lambda data source to remove a member from a hub'
+      }
+    )
+
     this.createResolvers()
 
     this.createOutputs(props.stage)
@@ -214,6 +226,7 @@ export class AppSyncConstruct extends Construct {
 
     // Member resolvers
     addMemberResolver(this, this.addMemberDataSource, this.api)
+    removeMemberResolver(this, this.removeMemberDataSource, this.api)
   }
 
   private createOutputs(stage: string): void {

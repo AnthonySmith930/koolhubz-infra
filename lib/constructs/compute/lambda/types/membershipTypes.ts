@@ -23,3 +23,17 @@ export interface CleanupEvent {
   source: string
   action: string
 }
+
+export interface RemoveMemberInput {
+  hubId: string
+  testUserId?: string
+}
+
+export interface RemoveMemberEvent {
+  arguments: {
+    input: RemoveMemberInput
+  }
+  identity?: {
+    sub?: string
+  }
+}

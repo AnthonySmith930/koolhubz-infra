@@ -20,7 +20,7 @@ const docClient = DynamoDBDocumentClient.from(ddbClient, {
   }
 })
 
-const MEMBERSHIP_TABLE_NAME = process.env.MEMBERSHIP_TABLE_NAME!
+const MEMBERSHIPS_TABLE_NAME = process.env.MEMBERSHIPS_TABLE_NAME!
 const HUBS_TABLE_NAME = process.env.HUBS_TABLE_NAME!
 
 /**
@@ -102,7 +102,7 @@ async function checkExistingMembership(
   userId: string
 ): Promise<void> {
   const getCommand = new GetCommand({
-    TableName: MEMBERSHIP_TABLE_NAME,
+    TableName: MEMBERSHIPS_TABLE_NAME,
     Key: { hubId, userId }
   })
 
@@ -130,7 +130,7 @@ async function createMemberRecord(
   }
 
   const putCommand = new PutCommand({
-    TableName: MEMBERSHIP_TABLE_NAME,
+    TableName: MEMBERSHIPS_TABLE_NAME,
     Item: membership,
     ConditionExpression:
       'attribute_not_exists(hubId) AND attribute_not_exists(userId)'

@@ -112,7 +112,8 @@ export class KoolHubzStack extends cdk.Stack {
       updateProfileFunction: this.usersLambda.updateProfileFunction,
       updateUserPreferencesFunction:
         this.usersLambda.updateUserPreferencesFunction,
-      addMemberFunction: this.membershipsLambda.addMemberFunction
+      addMemberFunction: this.membershipsLambda.addMemberFunction,
+      removeMemberFunction: this.membershipsLambda.removeMemberFunction
     })
 
     // Monitoring

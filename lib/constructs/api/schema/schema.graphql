@@ -102,7 +102,7 @@ input UpdateProfileInput {
   testUserId: ID # used only for testing in Dev/Staging
 }
 
-# Members
+# Memberships
 type Membership {
   hubId: ID!
   userId: ID!
@@ -111,6 +111,11 @@ type Membership {
 }
 
 input AddMemberInput {
+  hubId: ID!
+  testUserId: ID  # For testing without Cognito
+}
+
+input RemoveMemberInput {
   hubId: ID!
   testUserId: ID  # For testing without Cognito
 }
@@ -155,6 +160,8 @@ type Mutation {
 
   # Members
   addMember(input: AddMemberInput!): Membership!
+
+  removeMember(input: RemoveMemberInput!): Boolean!
 }
 
 type Subscription {
