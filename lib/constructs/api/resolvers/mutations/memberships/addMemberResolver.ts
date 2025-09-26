@@ -1,17 +1,17 @@
 import { Construct } from 'constructs'
 import * as appsync from 'aws-cdk-lib/aws-appsync'
-import { LAMBDA_PASSTHROUGH_CODE } from '../resolverConstants'
+import { LAMBDA_PASSTHROUGH_CODE } from '../../resolverConstants'
 
-export default function createUserResolver(
+export default function addMemberResolver(
   construct: Construct,
-  createUserDataSource: appsync.LambdaDataSource,
+  addMemberDataSource: appsync.LambdaDataSource,
   api: appsync.GraphqlApi
 ) {
-  return new appsync.Resolver(construct, 'CreateUserResolver', {
+  return new appsync.Resolver(construct, 'AddMemberResolver', {
     api,
     typeName: 'Mutation',
-    fieldName: 'createUser',
-    dataSource: createUserDataSource,
+    fieldName: 'addMember',
+    dataSource: addMemberDataSource,
     code: appsync.Code.fromInline(LAMBDA_PASSTHROUGH_CODE),
     runtime: appsync.FunctionRuntime.JS_1_0_0
   })

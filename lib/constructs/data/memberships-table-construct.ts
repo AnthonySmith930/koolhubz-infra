@@ -3,19 +3,19 @@ import * as dynamodb from 'aws-cdk-lib/aws-dynamodb'
 import { Construct } from 'constructs'
 import { MonitoringConstruct } from '../foundation/monitoring-construct'
 
-interface MembersTableConstructProps {
+interface MembershipsTableConstructProps {
   stage: string
 }
 
-export class MembersTableConstruct extends Construct {
+export class MembershipsTableConstruct extends Construct {
   public readonly table: dynamodb.Table
   public readonly membersMonitoring: MonitoringConstruct
 
-  constructor(scope: Construct, id: string, props: MembersTableConstructProps) {
+  constructor(scope: Construct, id: string, props: MembershipsTableConstructProps) {
     super(scope, id)
 
-    this.table = new dynamodb.Table(this, 'MembersTable', {
-      tableName: `KoolHubz-${props.stage}-Members`,
+    this.table = new dynamodb.Table(this, 'MembershipsTable', {
+      tableName: `KoolHubz-${props.stage}-Memberships`,
       partitionKey: {
         name: 'hubId',
         type: dynamodb.AttributeType.STRING
@@ -44,10 +44,10 @@ export class MembersTableConstruct extends Construct {
     })
 
     // Outputs
-    new cdk.CfnOutput(this, 'MembersTableName', {
+    new cdk.CfnOutput(this, 'MembershipsTableName', {
       value: this.table.tableName,
-      description: 'DynamoDB Members Table Name',
-      exportName: `KoolHubz-${props.stage}-MembersTableName`
+      description: 'DynamoDB Memberships Table Name',
+      exportName: `KoolHubz-${props.stage}-MembershipsTableName`
     })
   }
 }

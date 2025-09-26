@@ -1,6 +1,6 @@
 import { Construct } from 'constructs'
 import * as appsync from 'aws-cdk-lib/aws-appsync'
-import { LAMBDA_PASSTHROUGH_CODE } from '../resolverConstants'
+import { LAMBDA_PASSTHROUGH_CODE } from '../../resolverConstants'
 
 export default function getUserProfileResolver(
   construct: Construct,

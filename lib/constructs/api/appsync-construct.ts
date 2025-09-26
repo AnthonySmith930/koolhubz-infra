@@ -5,15 +5,16 @@ import * as cognito from 'aws-cdk-lib/aws-cognito'
 import * as lambda from 'aws-cdk-lib/aws-lambda'
 import * as path from 'path'
 import { Construct } from 'constructs'
-import createHubResolver from './resolvers/mutations/createHubResolver'
-import getHubResolver from './resolvers/queries/getHubResolver'
-import deleteHubResolver from './resolvers/mutations/deleteHubResolver'
-import getNearbyHubsResolver from './resolvers/queries/getNearbyHubsResolver'
-import createUserResolver from './resolvers/mutations/createUserResolver'
-import getUserProfileResolver from './resolvers/queries/getUserProfileResolver'
-import getMeResolver from './resolvers/queries/getMeResolver'
-import updateProfileResolver from './resolvers/mutations/updateProfileResolver'
-import updateUserPreferencesResolver from './resolvers/mutations/updateUserPreferencesResolver'
+import createHubResolver from './resolvers/mutations/hubs/createHubResolver'
+import getHubResolver from './resolvers/queries/hubs/getHubResolver'
+import deleteHubResolver from './resolvers/mutations/hubs/deleteHubResolver'
+import getNearbyHubsResolver from './resolvers/queries/hubs/getNearbyHubsResolver'
+import createUserResolver from './resolvers/mutations/users/createUserResolver'
+import getUserProfileResolver from './resolvers/queries/users/getUserProfileResolver'
+import getMeResolver from './resolvers/queries/users/getMeResolver'
+import updateProfileResolver from './resolvers/mutations/users/updateProfileResolver'
+import updateUserPreferencesResolver from './resolvers/mutations/users/updateUserPreferencesResolver'
+import addMemberResolver from './resolvers/mutations/memberships/addMemberResolver'
 
 interface AppSyncConstructProps {
   stage: string
@@ -29,6 +30,7 @@ interface AppSyncConstructProps {
   getMeFunction: lambda.Function
   updateProfileFunction: lambda.Function
   updateUserPreferencesFunction: lambda.Function
+  addMemberFunction: lambda.Function
 }
 
 export class AppSyncConstruct extends Construct {
@@ -47,6 +49,9 @@ export class AppSyncConstruct extends Construct {
   public readonly getMeDataSource: appsync.LambdaDataSource
   public readonly updateProfileDataSource: appsync.LambdaDataSource
   public readonly updateUserPreferencesDataSource: appsync.LambdaDataSource
+
+  // Member datasources
+  public readonly addMemberDataSource: appsync.LambdaDataSource
 
   constructor(scope: Construct, id: string, props: AppSyncConstructProps) {
     super(scope, id)
@@ -164,13 +169,23 @@ export class AppSyncConstruct extends Construct {
         description: 'Lambda data source to update user profile'
       }
     )
-    
+
     this.updateUserPreferencesDataSource = this.api.addLambdaDataSource(
       'UpdateUserPreferencesDataSource',
       props.updateUserPreferencesFunction,
       {
         name: 'UpdateUserPreferencesLambda',
         description: 'Lambda data source to update user preferences'
+      }
+    )
+
+    // Membership datasources
+    this.addMemberDataSource = this.api.addLambdaDataSource(
+      'AddMemberDataSource',
+      props.addMemberFunction,
+      {
+        name: 'AddMemberLambda',
+        description: 'Lambda data source to add a member to a hub'
       }
     )
 
@@ -191,7 +206,14 @@ export class AppSyncConstruct extends Construct {
     getUserProfileResolver(this, this.getUserProfileDataSource, this.api)
     getMeResolver(this, this.getMeDataSource, this.api)
     updateProfileResolver(this, this.updateProfileDataSource, this.api)
-    updateUserPreferencesResolver(this, this.updateUserPreferencesDataSource, this.api)
+    updateUserPreferencesResolver(
+      this,
+      this.updateUserPreferencesDataSource,
+      this.api
+    )
+
+    // Member resolvers
+    addMemberResolver(this, this.addMemberDataSource, this.api)
   }
 
   private createOutputs(stage: string): void {

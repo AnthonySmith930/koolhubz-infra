@@ -102,6 +102,19 @@ input UpdateProfileInput {
   testUserId: ID # used only for testing in Dev/Staging
 }
 
+# Members
+type Membership {
+  hubId: ID!
+  userId: ID!
+  joinedAt: AWSDateTime!
+  lastSeen: AWSDateTime!
+}
+
+input AddMemberInput {
+  hubId: ID!
+  testUserId: ID  # For testing without Cognito
+}
+
 type Query {
   # Hub queries
   getHub(hubId: ID!): Hub
@@ -139,6 +152,9 @@ type Mutation {
   updateProfile(input: UpdateProfileInput!): UserProfile!
 
   updateUserPreferences(input: UpdateUserPreferencesInput!): UserPreferences!
+
+  # Members
+  addMember(input: AddMemberInput!): Membership!
 }
 
 type Subscription {

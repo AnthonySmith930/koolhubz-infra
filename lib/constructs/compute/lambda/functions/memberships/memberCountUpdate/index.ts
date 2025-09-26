@@ -1,19 +1,13 @@
 import { DynamoDBStreamEvent, DynamoDBRecord } from 'aws-lambda'
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
 import { DynamoDBDocumentClient, UpdateCommand } from '@aws-sdk/lib-dynamodb'
-import {
-  CloudWatchClient,
-  PutMetricDataCommand
-} from '@aws-sdk/client-cloudwatch'
 
 // Initialize clients
 const ddbClient = new DynamoDBClient({})
 const docClient = DynamoDBDocumentClient.from(ddbClient)
-const cloudWatch = new CloudWatchClient({})
 
 // Environment variables
 const HUBS_TABLE_NAME = process.env.HUBS_TABLE_NAME!
-const STAGE = process.env.STAGE || 'dev'
 
 /**
  * Lambda handler for DynamoDB Stream events - Updates hub member counts in real-time
@@ -45,7 +39,6 @@ export const handler = async (event: DynamoDBStreamEvent): Promise<void> => {
           record.eventName,
           error
         )
-        await sendMetric('StreamProcessingFailures', 1)
         // Continue processing other records instead of failing entire batch
       }
     }
@@ -59,20 +52,13 @@ export const handler = async (event: DynamoDBStreamEvent): Promise<void> => {
         console.log(`Updated hub ${hubId} member count by ${delta}`)
       } catch (error) {
         console.error(`Failed to update hub ${hubId} member count:`, error)
-        await sendMetric('HubUpdateFailures', 1)
       }
-    }
-
-    // Record success metrics
-    if (successCount > 0) {
-      await sendMetric('HubUpdateSuccesses', successCount)
     }
 
     console.log(`Stream processing complete. Updated ${successCount} hubs.`)
   } catch (error) {
     console.error('Stream processing failed:', error)
-    await sendMetric('StreamProcessingFailures', 1)
-    throw error // Re-throw to trigger CloudWatch alarm
+    throw error
   }
 }
 
@@ -120,33 +106,4 @@ async function updateHubMemberCount(
   })
 
   await docClient.send(updateCommand)
-}
-
-/**
- * Send custom metric to CloudWatch
- */
-async function sendMetric(metricName: string, value: number): Promise<void> {
-  try {
-    const putMetricCommand = new PutMetricDataCommand({
-      Namespace: 'KoolHubz/MemberCountUpdates',
-      MetricData: [
-        {
-          MetricName: metricName,
-          Value: value,
-          Unit: 'Count',
-          Timestamp: new Date(),
-          Dimensions: [
-            {
-              Name: 'Environment',
-              Value: STAGE
-            }
-          ]
-        }
-      ]
-    })
-
-    await cloudWatch.send(putMetricCommand)
-  } catch (error) {
-    console.error(`Failed to send CloudWatch metric ${metricName}:`, error)
-  }
 }

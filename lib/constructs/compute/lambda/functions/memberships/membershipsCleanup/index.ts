@@ -6,30 +6,15 @@ import {
   DeleteCommand,
   ScanCommandOutput 
 } from '@aws-sdk/lib-dynamodb'
-import { CloudWatchClient, PutMetricDataCommand } from '@aws-sdk/client-cloudwatch'
+import { Membership, CleanupEvent } from '../../../types/membershipTypes'
 
 // Initialize clients
 const ddbClient = new DynamoDBClient({})
 const docClient = DynamoDBDocumentClient.from(ddbClient)
-const cloudWatch = new CloudWatchClient({})
 
 // Environment variables
-const MEMBERS_TABLE_NAME = process.env.MEMBERS_TABLE_NAME!
+const MEMBERSHIPS_TABLE_NAME = process.env.MEMBERSHIPS_TABLE_NAME!
 const HEARTBEAT_TIMEOUT_MINUTES = parseInt(process.env.HEARTBEAT_TIMEOUT_MINUTES || '20')
-const STAGE = process.env.STAGE || 'dev'
-
-// Types
-interface Member {
-  hubId: string
-  userId: string
-  joinedAt: string
-  lastSeen: string
-}
-
-interface CleanupEvent {
-  source: string
-  action: string
-}
 
 /**
  * Lambda handler for scheduled member cleanup
@@ -38,19 +23,12 @@ export const handler = async (event: EventBridgeEvent<string, CleanupEvent>): Pr
   console.log('Starting scheduled member cleanup:', JSON.stringify(event, null, 2))
   
   try {
-    const cleanupStats = await performMemberCleanup()
-    
-    // Send success metrics
-    await sendMetric('CleanupExecutions', 1)
-    if (cleanupStats.membersRemoved > 0) {
-      await sendMetric('MembersCleanedUp', cleanupStats.membersRemoved)
-    }
+    const cleanupStats = await performMembershipsCleanup()
     
     console.log('Cleanup completed successfully:', cleanupStats)
     
   } catch (error) {
-    console.error('Member cleanup failed:', error)
-    await sendMetric('CleanupFailures', 1)
+    console.error('Memberhip cleanup failed:', error)
     throw error // Re-throw to trigger CloudWatch alarm
   }
 }
@@ -58,7 +36,7 @@ export const handler = async (event: EventBridgeEvent<string, CleanupEvent>): Pr
 /**
  * Perform the actual member cleanup process
  */
-async function performMemberCleanup(): Promise<{ membersRemoved: number, hubsAffected: number }> {
+async function performMembershipsCleanup(): Promise<{ membersRemoved: number, hubsAffected: number }> {
   const cutoffTime = new Date()
   cutoffTime.setMinutes(cutoffTime.getMinutes() - HEARTBEAT_TIMEOUT_MINUTES)
   const cutoffISO = cutoffTime.toISOString()
@@ -77,7 +55,7 @@ async function performMemberCleanup(): Promise<{ membersRemoved: number, hubsAff
     try {
       // Scan for inactive members (paginated)
       const scanCommand = new ScanCommand({
-        TableName: MEMBERS_TABLE_NAME,
+        TableName: MEMBERSHIPS_TABLE_NAME,
         FilterExpression: 'lastSeen < :cutoff',
         ExpressionAttributeValues: {
           ':cutoff': cutoffISO
@@ -87,22 +65,21 @@ async function performMemberCleanup(): Promise<{ membersRemoved: number, hubsAff
       })
 
       const result: ScanCommandOutput = await docClient.send(scanCommand)
-      const inactiveMembers = result.Items as Member[] || []
+      const staleMemberships = result.Items as Membership[] || []
 
-      console.log(`Scan #${scanCount}: Found ${inactiveMembers.length} inactive members`)
+      console.log(`Scan #${scanCount}: Found ${staleMemberships.length} inactive members`)
 
       // Remove inactive members
-      for (const member of inactiveMembers) {
+      for (const membership of staleMemberships) {
         try {
-          await removeInactiveMember(member)
+          await removeInactiveMember(membership)
           totalRemoved++
-          affectedHubs.add(member.hubId)
+          affectedHubs.add(membership.hubId)
           
-          console.log(`Removed inactive member: ${member.userId} from hub: ${member.hubId} (last seen: ${member.lastSeen})`)
+          console.log(`Removed inactive member: ${membership.userId} from hub: ${membership.hubId} (last seen: ${membership.lastSeen})`)
           
         } catch (error) {
-          console.error(`Failed to remove member ${member.userId} from hub ${member.hubId}:`, error)
-          await sendMetric('MemberRemovalFailures', 1)
+          console.error(`Failed to remove member ${membership.userId} from hub ${membership.hubId}:`, error)
           // Continue with other members
         }
       }
@@ -110,13 +87,12 @@ async function performMemberCleanup(): Promise<{ membersRemoved: number, hubsAff
       lastEvaluatedKey = result.LastEvaluatedKey
 
       // Add delay between scans to avoid overwhelming DynamoDB
-      if (lastEvaluatedKey && inactiveMembers.length > 0) {
+      if (lastEvaluatedKey && staleMemberships.length > 0) {
         await new Promise(resolve => setTimeout(resolve, 100)) // 100ms delay
       }
 
     } catch (error) {
       console.error(`Error during cleanup scan #${scanCount}:`, error)
-      await sendMetric('CleanupScanFailures', 1)
       break // Exit loop on scan failure
     }
 
@@ -139,43 +115,16 @@ async function performMemberCleanup(): Promise<{ membersRemoved: number, hubsAff
 /**
  * Remove an inactive member from the Members table
  */
-async function removeInactiveMember(member: Member): Promise<void> {
+async function removeInactiveMember(membership: Membership): Promise<void> {
   const deleteCommand = new DeleteCommand({
-    TableName: MEMBERS_TABLE_NAME,
+    TableName: MEMBERSHIPS_TABLE_NAME,
     Key: {
-      hubId: member.hubId,
-      userId: member.userId
+      hubId: membership.hubId,
+      userId: membership.userId
     }
   })
 
   await docClient.send(deleteCommand)
   // hub member count will be updated by the memberCount 
   // lambda triggered by these deletes
-}
-
-
-/**
- * Send custom metric to CloudWatch
- */
-async function sendMetric(metricName: string, value: number): Promise<void> {
-  try {
-    const putMetricCommand = new PutMetricDataCommand({
-      Namespace: 'KoolHubz/MemberCleanup',
-      MetricData: [{
-        MetricName: metricName,
-        Value: value,
-        Unit: 'Count',
-        Timestamp: new Date(),
-        Dimensions: [{
-          Name: 'Environment',
-          Value: STAGE
-        }]
-      }]
-    })
-
-    await cloudWatch.send(putMetricCommand)
-    
-  } catch (error) {
-    console.error(`Failed to send CloudWatch metric ${metricName}:`, error)
-  }
 }

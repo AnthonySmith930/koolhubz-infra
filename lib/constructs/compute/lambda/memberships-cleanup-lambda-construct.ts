@@ -8,55 +8,60 @@ import * as iam from 'aws-cdk-lib/aws-iam'
 import * as path from 'path'
 import { Construct } from 'constructs'
 
-interface MemberCleanupLambdaConstructProps {
+interface MembershipsCleanupLambdaConstructProps {
   stage: string
-  membersTable: dynamodb.Table
+  membershipsTable: dynamodb.Table
 }
 
-export class MemberCleanupLambdaConstruct extends Construct {
+export class MembershipsCleanupLambdaConstruct extends Construct {
   public readonly cleanupFunction: lambda.Function
 
-  constructor(scope: Construct, id: string, props: MemberCleanupLambdaConstructProps) {
+  constructor(
+    scope: Construct,
+    id: string,
+    props: MembershipsCleanupLambdaConstructProps
+  ) {
     super(scope, id)
 
     // Create Member Cleanup Lambda
-    this.cleanupFunction = new nodejs.NodejsFunction(this, 'MemberCleanupFunction', {
-      functionName: `KoolHubz-${props.stage}-MemberCleanup`,
-      description: 'Hourly cleanup of inactive members - runs every hour',
-      entry: path.resolve(
-        process.cwd(),
-        'lib/constructs/compute/lambda/functions/members/memberCleanup/index.ts'
-      ),
-      runtime: lambda.Runtime.NODEJS_20_X,
-      timeout: cdk.Duration.minutes(5),
-      memorySize: 256,
-      retryAttempts: 2,
-      environment: {
-        MEMBERS_TABLE_NAME: props.membersTable.tableName,
-        STAGE: props.stage,
-        HEARTBEAT_TIMEOUT_MINUTES: '20'
-      },
-      bundling: {
-        minify: props.stage === 'prod',
-        sourceMap: true,
-        target: 'node20',
-        externalModules: [
-          '@aws-sdk/client-dynamodb',
-          '@aws-sdk/lib-dynamodb',
-          '@aws-sdk/client-cloudwatch'
-        ]
+    this.cleanupFunction = new nodejs.NodejsFunction(
+      this,
+      'MembershipsCleanupFunction',
+      {
+        functionName: `KoolHubz-${props.stage}-MembershipsCleanup`,
+        description: 'Hourly cleanup of inactive members - runs every hour',
+        entry: path.resolve(
+          process.cwd(),
+          'lib/constructs/compute/lambda/functions/memberships/membershipsCleanup/index.ts'
+        ),
+        runtime: lambda.Runtime.NODEJS_20_X,
+        timeout: cdk.Duration.minutes(5),
+        memorySize: 256,
+        retryAttempts: 2,
+        environment: {
+          MEMBERSHIPS_TABLE_NAME: props.membershipsTable.tableName,
+          STAGE: props.stage,
+          NODE_OPTIONS: '--enable-source-maps',
+          HEARTBEAT_TIMEOUT_MINUTES: '20'
+        },
+        bundling: {
+          minify: props.stage === 'prod',
+          sourceMap: true,
+          target: 'node20',
+          externalModules: ['@aws-sdk/client-dynamodb', '@aws-sdk/lib-dynamodb']
+        }
       }
-    })
+    )
 
-    this.grantPermissions(props.membersTable)
+    this.grantPermissions(props.membershipsTable)
 
     this.setupScheduledTrigger(props.stage)
 
     this.createOutputs(props.stage)
   }
 
-  private grantPermissions(membersTable: dynamodb.Table): void {
-    membersTable.grantReadWriteData(this.cleanupFunction)
+  private grantPermissions(membershipsTable: dynamodb.Table): void {
+    membershipsTable.grantReadWriteData(this.cleanupFunction)
 
     this.cleanupFunction.addToRolePolicy(
       new iam.PolicyStatement({
@@ -69,8 +74,8 @@ export class MemberCleanupLambdaConstruct extends Construct {
 
   private setupScheduledTrigger(stage: string): void {
     const cleanupRule = new events.Rule(this, 'HourlyMemberCleanupRule', {
-      ruleName: `KoolHubz-${stage}-HourlyMemberCleanup`,
-      description: 'Hourly member cleanup at the top of every hour',
+      ruleName: `KoolHubz-${stage}-HourlyMembershipCleanup`,
+      description: 'Hourly membership cleanup at the top of every hour',
       schedule: events.Schedule.cron({
         minute: '0', // At minute 0 (top of hour)
         hour: '*', // Every hour (0-23)

@@ -8,7 +8,7 @@ import { Construct } from 'constructs'
 
 interface MemberCountUpdateLambdaConstructProps {
   stage: string
-  membersTable: dynamodb.Table
+  membershipsTable: dynamodb.Table
   hubsTable: dynamodb.Table
 }
 
@@ -31,7 +31,7 @@ export class MemberCountUpdateLambdaConstruct extends Construct {
         description: 'Updates hub member counts from DynamoDB Streams',
         entry: path.resolve(
           process.cwd(),
-          'lib/constructs/compute/lambda/functions/members/memberCountUpdate/index.ts'
+          'lib/constructs/compute/lambda/functions/memberships/memberCountUpdate/index.ts'
         ),
         runtime: lambda.Runtime.NODEJS_20_X,
         timeout: cdk.Duration.seconds(30),
@@ -45,28 +45,24 @@ export class MemberCountUpdateLambdaConstruct extends Construct {
           minify: props.stage === 'prod',
           sourceMap: true,
           target: 'node20',
-          externalModules: [
-            '@aws-sdk/client-dynamodb',
-            '@aws-sdk/lib-dynamodb',
-            '@aws-sdk/client-cloudwatch'
-          ]
+          externalModules: ['@aws-sdk/client-dynamodb', '@aws-sdk/lib-dynamodb']
         }
       }
     )
 
-    this.grantPermissions(props.membersTable, props.hubsTable)
+    this.grantPermissions(props.membershipsTable, props.hubsTable)
 
-    this.setupStreamTrigger(props.membersTable)
+    this.setupStreamTrigger(props.membershipsTable)
 
     this.createOutputs(props.stage)
   }
 
   private grantPermissions(
-    membersTable: dynamodb.Table,
+    membershipsTable: dynamodb.Table,
     hubsTable: dynamodb.Table
   ): void {
-    membersTable.grantReadData(this.memberCountUpdateFunction)
-    membersTable.grantStreamRead(this.memberCountUpdateFunction)
+    membershipsTable.grantReadData(this.memberCountUpdateFunction)
+    membershipsTable.grantStreamRead(this.memberCountUpdateFunction)
     hubsTable.grantWriteData(this.memberCountUpdateFunction)
 
     this.memberCountUpdateFunction.addToRolePolicy(
@@ -78,11 +74,11 @@ export class MemberCountUpdateLambdaConstruct extends Construct {
     )
   }
 
-  private setupStreamTrigger(membersTable: dynamodb.Table): void {
+  private setupStreamTrigger(membershipsTable: dynamodb.Table): void {
     this.memberCountUpdateFunction.addEventSourceMapping(
       'MembersStreamMapping',
       {
-        eventSourceArn: membersTable.tableStreamArn!,
+        eventSourceArn: membershipsTable.tableStreamArn!,
         startingPosition: lambda.StartingPosition.TRIM_HORIZON,
         batchSize: 10,
         maxBatchingWindow: cdk.Duration.seconds(5),

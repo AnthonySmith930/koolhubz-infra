@@ -4,11 +4,12 @@ import { CognitoConstruct } from './constructs/foundation/cognito-construct'
 import { HubsTableConstruct } from './constructs/data/hubs-table-construct'
 import { HubsLambdaConstruct } from './constructs/compute/lambda/hubs-lambda-construct'
 import { UsersLambdaConstruct } from './constructs/compute/lambda/users-lambda-construct'
+import { MembershipsLambdaConstruct } from './constructs/compute/lambda/memberships-lambda-construct'
 import { AppSyncConstruct } from './constructs/api/appsync-construct'
 import { UsersTableConstruct } from './constructs/data/users-table-construct'
-import { MembersTableConstruct } from './constructs/data/members-table-construct'
+import { MembershipsTableConstruct } from './constructs/data/memberships-table-construct'
 import { MonitoringConstruct } from './constructs/foundation/monitoring-construct'
-import { MemberCleanupLambdaConstruct } from './constructs/compute/lambda/member-cleanup-lambda-construct'
+import { MembershipsCleanupLambdaConstruct } from './constructs/compute/lambda/memberships-cleanup-lambda-construct'
 import { MemberCountUpdateLambdaConstruct } from './constructs/compute/lambda/member-count-update-lambda-construct'
 
 interface KoolHubzStackProps extends cdk.StackProps {
@@ -22,11 +23,12 @@ export class KoolHubzStack extends cdk.Stack {
   public readonly appSync: AppSyncConstruct
   public readonly hubsLambda: HubsLambdaConstruct
   public readonly usersLambda: UsersLambdaConstruct
-  public readonly memberCleanupLambda: MemberCleanupLambdaConstruct
+  public readonly membershipsLambda: MembershipsLambdaConstruct
+  public readonly membershipsCleanupLambda: MembershipsCleanupLambdaConstruct
   public readonly memberCountUpdateLambda: MemberCountUpdateLambdaConstruct
   public readonly usersTable: UsersTableConstruct
-  public readonly membersTable: MembersTableConstruct
-  public readonly membersMonitoring: MonitoringConstruct
+  public readonly membershipsTable: MembershipsTableConstruct
+  public readonly membershipsMonitoring: MonitoringConstruct
   public readonly hubsMonitoring: MonitoringConstruct
   public readonly usersMonitoring: MonitoringConstruct
 
@@ -45,9 +47,13 @@ export class KoolHubzStack extends cdk.Stack {
       stage: props.stage
     })
 
-    this.membersTable = new MembersTableConstruct(this, 'MembersTable', {
-      stage: props.stage
-    })
+    this.membershipsTable = new MembershipsTableConstruct(
+      this,
+      'MembershipsTable',
+      {
+        stage: props.stage
+      }
+    )
 
     // Create lambdas before creating AppSync constructs ---------------
     this.hubsLambda = new HubsLambdaConstruct(this, 'HubsLambda', {
@@ -60,12 +66,22 @@ export class KoolHubzStack extends cdk.Stack {
       usersTable: this.usersTable.table
     })
 
-    this.memberCleanupLambda = new MemberCleanupLambdaConstruct(
+    this.membershipsLambda = new MembershipsLambdaConstruct(
       this,
-      'MemberCleanup',
+      'MembershipsLambda',
       {
         stage: props.stage,
-        membersTable: this.membersTable.table
+        membershipsTable: this.membershipsTable.table,
+        hubsTable: this.hubsTable.table
+      }
+    )
+
+    this.membershipsCleanupLambda = new MembershipsCleanupLambdaConstruct(
+      this,
+      'MembershipsCleanup',
+      {
+        stage: props.stage,
+        membershipsTable: this.membershipsTable.table
       }
     )
 
@@ -74,7 +90,7 @@ export class KoolHubzStack extends cdk.Stack {
       'MemberCountUpdate',
       {
         stage: props.stage,
-        membersTable: this.membersTable.table,
+        membershipsTable: this.membershipsTable.table,
         hubsTable: this.hubsTable.table
       }
     )
@@ -95,23 +111,24 @@ export class KoolHubzStack extends cdk.Stack {
       getMeFunction: this.usersLambda.getMeFunction,
       updateProfileFunction: this.usersLambda.updateProfileFunction,
       updateUserPreferencesFunction:
-        this.usersLambda.updateUserPreferencesFunction
+        this.usersLambda.updateUserPreferencesFunction,
+      addMemberFunction: this.membershipsLambda.addMemberFunction
     })
 
     // Monitoring
-    this.membersMonitoring = new MonitoringConstruct(
+    this.membershipsMonitoring = new MonitoringConstruct(
       this,
-      'MembersMonitoring',
+      'MembershipsMonitoring',
       {
         stage: props.stage,
-        serviceName: 'Members',
+        serviceName: 'Memberships',
         enableSnsAlerts: true,
         alertEmails: ['antsmithdev@gmail.com'],
         createDashboard: true,
         functions: [
           {
-            function: this.memberCleanupLambda.cleanupFunction,
-            id: 'MemberCleanup'
+            function: this.membershipsCleanupLambda.cleanupFunction,
+            id: 'MembershipsCleanup'
           },
           {
             function: this.memberCountUpdateLambda.memberCountUpdateFunction,
@@ -124,12 +141,12 @@ export class KoolHubzStack extends cdk.Stack {
             metricName: 'HubUpdateFailures'
           },
           {
-            namespace: 'KoolHubz/MemberCleanup',
+            namespace: 'KoolHubz/MemberhipsCleanup',
             metricName: 'CleanupFailures'
           },
           {
-            namespace: 'KoolHubz/MemberCleanup',
-            metricName: 'MembersCleanedUp'
+            namespace: 'KoolHubz/MembershipsCleanup',
+            metricName: 'MembershipsCleanedUp'
           }
         ]
       }
