@@ -1,33 +1,15 @@
-export interface AuthContext {
+export interface AuthenticatedUser {
   userId: string
-  authMethod: 'cognito' | 'api-key'
-  stage: string
+  username: string
 }
 
-export function getAuthenticatedUser(event: any, input?: any): AuthContext {
-  const stage = process.env.STAGE!
-
-  // Security: Block test userId in production
-  if (input?.testUserId && stage === 'prod') {
-    throw new Error('userId parameter not allowed in production')
+export function getAuthenticatedUser(event: any): AuthenticatedUser {
+  if (!event.identity || !event.identity.sub) {
+    throw new Error('Authentication required. User must be signed in.')
   }
 
-  // Get userId based on environment and auth method
-  const userId =
-    event.identity?.sub || (stage !== 'prod' ? input?.testUserId : null)
-
-  if (!userId) {
-    throw new Error(
-      stage === 'prod'
-        ? 'Cognito authentication required'
-        : 'Authentication required or userId must be provided for testing'
-    )
+  return {
+    userId: event.identity.sub,
+    username: event.identity.username || event.identity.sub
   }
-
-  const authMethod = event.identity?.sub ? 'cognito' : 'api-key'
-
-  // Audit logging
-  console.log(`Auth: userId=${userId}, method=${authMethod}, stage=${stage}`)
-
-  return { userId, authMethod, stage }
 }

@@ -4,13 +4,9 @@ import {
   PutCommand,
   GetCommand
 } from '@aws-sdk/lib-dynamodb'
-import { Hub } from '../../../types/hubTypes'
-import {
-  Membership,
-  AddMemberEvent,
-  AddMemberInput
-} from '../../../types/membershipTypes'
 import { getAuthenticatedUser } from '../../../helpers/getAuthenticatedUser'
+import { Hub, Membership, AddMemberInput } from '../../../types/generated'
+import { AddMemberEvent, AddMemberHandler } from '../../../types/events'
 
 // Initialize DynamoDB client
 const ddbClient = new DynamoDBClient({})
@@ -26,17 +22,16 @@ const HUBS_TABLE_NAME = process.env.HUBS_TABLE_NAME!
 /**
  * Lambda handler for addMember GraphQL mutation
  */
-export const handler = async (event: AddMemberEvent): Promise<Membership> => {
+export const handler: AddMemberHandler = async (event: AddMemberEvent): Promise<Membership> => {
   console.log('AddMember Lambda invoked:', JSON.stringify(event, null, 2))
 
   try {
     const input = event.arguments.input
-    const auth = getAuthenticatedUser(event, input)
-    const userId = auth.userId
-
-    console.log(`Adding user ${userId} to hub ${input.hubId}`)
+    const { userId } = getAuthenticatedUser(event)
 
     validateInput(input)
+
+    console.log(`Adding user ${userId} to hub ${input.hubId}`)
 
     // Check if hub exists and is joinable
     await validateHub(input.hubId)

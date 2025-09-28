@@ -1,7 +1,8 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
 import { DynamoDBDocumentClient, GetCommand } from '@aws-sdk/lib-dynamodb'
 import { getAuthenticatedUser } from '../../../helpers/getAuthenticatedUser'
-import { User, GetMeEvent } from '../../../types/userTypes'
+import { User } from '../../../types/generated'
+import { GetMeEvent, GetMeHandler } from '../../../types/events'
 
 // Initialize DynamoDB client
 const ddbClient = new DynamoDBClient({})
@@ -17,16 +18,14 @@ const USERS_TABLE_NAME = process.env.USERS_TABLE_NAME!
  * Lambda handler for getMe GraphQL query
  * Returns the complete user object for the authenticated user
  */
-export const handler = async (event: GetMeEvent): Promise<User | null> => {
+export const handler: GetMeHandler = async (event: GetMeEvent): Promise<User | null> => {
   console.log('GetMe Lambda invoked:', JSON.stringify(event, null, 2))
 
   try {
-    const input = event.arguments
-    const auth = getAuthenticatedUser(event, input)
-    const userId = auth.userId
+    const { userId } = getAuthenticatedUser(event)
 
     console.log(
-      `Fetching complete profile for authenticated user: ${userId}, auth: ${auth.authMethod}`
+      `Fetching complete profile for authenticated user: ${userId}`
     )
 
     // Get user from DynamoDB

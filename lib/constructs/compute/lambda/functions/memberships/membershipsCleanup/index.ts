@@ -6,7 +6,7 @@ import {
   DeleteCommand,
   ScanCommandOutput 
 } from '@aws-sdk/lib-dynamodb'
-import { Membership, CleanupEvent } from '../../../types/membershipTypes'
+import { Membership } from '../../../types/generated'
 
 // Initialize clients
 const ddbClient = new DynamoDBClient({})
@@ -15,6 +15,11 @@ const docClient = DynamoDBDocumentClient.from(ddbClient)
 // Environment variables
 const MEMBERSHIPS_TABLE_NAME = process.env.MEMBERSHIPS_TABLE_NAME!
 const HEARTBEAT_TIMEOUT_MINUTES = parseInt(process.env.HEARTBEAT_TIMEOUT_MINUTES || '20')
+
+interface CleanupEvent {
+  source: string
+  action: string
+}
 
 /**
  * Lambda handler for scheduled member cleanup

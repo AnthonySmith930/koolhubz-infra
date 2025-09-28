@@ -1,3 +1,9 @@
+scalar AWSDateTime
+scalar AWSEmail
+scalar AWSJSON
+scalar AWSPhone
+scalar AWSURL
+
 # Hub types ---------------------------------------------
 type Hub {
   hubId: ID!
@@ -8,9 +14,11 @@ type Hub {
   hubType: HubType!
   createdBy: ID!
   createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
   description: String!
   isActive: Boolean!
   memberCount: Int!
+  geohash: String!
   
   # Will implement later:
   # markers: [HubMarker]
@@ -25,7 +33,6 @@ enum HubType {
 }
 
 input CreateHubInput {
-  testUserId: ID
   name: String!
   description: String!
   latitude: Float!
@@ -84,11 +91,9 @@ enum ProfileVisibility {
 input CreateUserInput {
   displayName: String!
   bio: String
-  testUserId: ID # used only for testing in Dev/Staging
 }
 
 input UpdateUserPreferencesInput {
-  testUserId: ID
   theme: Theme
   notifications: Boolean
   locationSharing: LocationSharing
@@ -99,7 +104,6 @@ input UpdateUserPreferencesInput {
 input UpdateProfileInput {
   displayName: String
   bio: String 
-  testUserId: ID # used only for testing in Dev/Staging
 }
 
 # Memberships
@@ -112,12 +116,10 @@ type Membership {
 
 input AddMemberInput {
   hubId: ID!
-  testUserId: ID  # For testing without Cognito
 }
 
 input RemoveMemberInput {
   hubId: ID!
-  testUserId: ID  # For testing without Cognito
 }
 
 type Query {
@@ -137,16 +139,16 @@ type Query {
   # searchHubs(query: String!, latitude: Float, longitude: Float): [Hub]
 
 # User queries
-  getMe(testUserId: ID): User
+  getMe: User
 
-  getUserProfile(userId: ID!, testUserId: ID): UserProfile
+  getUserProfile(userId: ID!): UserProfile
 }
   
 type Mutation {
   # Hub mutations
   createHub(input: CreateHubInput!): Hub!
 
-  deleteHub(hubId: ID!, testUserId: ID): Boolean!
+  deleteHub(hubId: ID!): Boolean!
 
   # Will implement later:
   # updateHub(hubId: ID!, input: UpdateHubInput!): Hub!
@@ -164,9 +166,9 @@ type Mutation {
   removeMember(input: RemoveMemberInput!): Boolean!
 }
 
-type Subscription {
-  # Will implement later:
-  # onHubCreated: Hub @aws_subscribe(mutations: ["createHub"])
-  # onHubUpdated(hubId: ID!): Hub @aws_subscribe(mutations: ["updateHub"])
-  # onHubDeleted: ID @aws_subscribe(mutations: ["deleteHub"])
-}
+# type Subscription {
+#   # Will implement later:
+#   # onHubCreated: Hub @aws_subscribe(mutations: ["createHub"])
+#   # onHubUpdated(hubId: ID!): Hub @aws_subscribe(mutations: ["updateHub"])
+#   # onHubDeleted: ID @aws_subscribe(mutations: ["deleteHub"])
+# }

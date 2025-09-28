@@ -70,22 +70,12 @@ export class AppSyncConstruct extends Construct {
       // Authentication configuration
       authorizationConfig: {
         defaultAuthorization: {
-          authorizationType: appsync.AuthorizationType.API_KEY,
-          apiKeyConfig: {
-            expires: cdk.Expiration.after(cdk.Duration.days(365)), // 1 year for development
-            description: `KoolHubz ${props.stage} API Key`
+          authorizationType: appsync.AuthorizationType.USER_POOL,
+          userPoolConfig: {
+            userPool: props.userPool,
+            defaultAction: appsync.UserPoolDefaultAction.ALLOW
           }
-        },
-
-        additionalAuthorizationModes: [
-          {
-            authorizationType: appsync.AuthorizationType.USER_POOL,
-            userPoolConfig: {
-              userPool: props.userPool,
-              defaultAction: appsync.UserPoolDefaultAction.ALLOW
-            }
-          }
-        ]
+        }
       },
 
       // Simplified logging configuration

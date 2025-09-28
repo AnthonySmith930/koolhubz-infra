@@ -1,12 +1,15 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
 import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb'
+import { getAuthenticatedUser } from '../../../helpers/getAuthenticatedUser'
 import {
   User,
   UserPreferences,
   CreateUserInput,
-  CreateUserEvent
-} from '../../../types/userTypes'
-import { getAuthenticatedUser } from '../../../helpers/getAuthenticatedUser'
+  Theme,
+  LocationSharing,
+  ProfileVisibility
+} from '../../../types/generated'
+import { CreateUserEvent, CreateUserHandler } from '../../../types/events'
 
 // Initialize DynamoDB client
 const ddbClient = new DynamoDBClient({})
@@ -21,14 +24,17 @@ const USERS_TABLE_NAME = process.env.USERS_TABLE_NAME!
 /**
  * Lambda handler for CreateUser GraphQL mutation
  */
-export const handler = async (event: CreateUserEvent): Promise<User> => {
+export const handler: CreateUserHandler = async (
+  event: CreateUserEvent
+): Promise<User> => {
   console.log('CreateUser Lambda invoked:', JSON.stringify(event, null, 2))
 
   try {
     const input = event.arguments.input
-    const auth = getAuthenticatedUser(event, input)
 
-    console.log('Creating user profile for:', auth.userId)
+    const { userId } = getAuthenticatedUser(event)
+
+    console.log('Creating user profile for:', userId)
 
     // Validate input
     validateInput(input)
@@ -38,20 +44,19 @@ export const handler = async (event: CreateUserEvent): Promise<User> => {
 
     // Create default preferences
     const defaultPreferences: UserPreferences = {
-      theme: 'AUTO',
+      theme: Theme.Auto,
       notifications: true,
-      locationSharing: 'ON',
-      profileVisibility: 'PUBLIC',
+      locationSharing: LocationSharing.On,
+      profileVisibility: ProfileVisibility.Public,
       isAnonymous: false
     }
 
     // Create user object
     const user: User = {
-      userId: auth.userId,
+      userId: userId,
       profile: {
         displayName: input.displayName.trim(),
         bio: input.bio?.trim(),
-        friends: []
       },
       preferences: defaultPreferences,
       joinedAt: now,
@@ -70,7 +75,7 @@ export const handler = async (event: CreateUserEvent): Promise<User> => {
 
     await docClient.send(putCommand)
 
-    console.log('User profile created successfully:', auth.userId)
+    console.log('User profile created successfully:', userId)
 
     return user
   } catch (error: any) {
@@ -120,7 +125,7 @@ function validateInput(input: CreateUserInput): void {
   }
 
   // Validate bio if provided
-  if (input.bio !== undefined) {
+  if (input.bio !== undefined && input.bio !== null) {
     if (input.bio.length > 500) {
       throw new Error('Bio cannot exceed 500 characters.')
     }

@@ -1,12 +1,8 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
 import { DynamoDBDocumentClient, UpdateCommand } from '@aws-sdk/lib-dynamodb'
 import { getAuthenticatedUser } from '../../../helpers/getAuthenticatedUser'
-import {
-  User,
-  UserProfile,
-  UpdateProfileEvent,
-  UpdateProfileInput
-} from '../../../types/userTypes'
+import { User, UserProfile, UpdateProfileInput } from '../../../types/generated'
+import { UpdateProfileEvent, UpdateProfileHandler } from '../../../types/events'
 
 // Initialize DynamoDB client
 const ddbClient = new DynamoDBClient({})
@@ -22,7 +18,7 @@ const USERS_TABLE_NAME = process.env.USERS_TABLE_NAME!
  * Lambda handler for updateProfile GraphQL mutation
  * Updates user profile data with optimistic locking
  */
-export const handler = async (
+export const handler: UpdateProfileHandler = async (
   event: UpdateProfileEvent
 ): Promise<UserProfile> => {
   console.log('UpdateProfile Lambda invoked:', JSON.stringify(event, null, 2))
@@ -31,12 +27,9 @@ export const handler = async (
     const input = event.arguments.input
 
     // Get authenticated user (required)
-    const auth = getAuthenticatedUser(event, input)
-    const userId = auth.userId
+    const { userId } = getAuthenticatedUser(event)
 
-    console.log(
-      `Updating profile for user: ${userId}, auth: ${auth.authMethod}`
-    )
+    console.log(`Updating profile for user: ${userId}`)
 
     // Validate input
     validateInput(input)
@@ -54,7 +47,7 @@ export const handler = async (
     expressionAttributeValues[':updatedAt'] = now
 
     // Update display name if provided
-    if (input.displayName !== undefined) {
+    if (input.displayName !== undefined && input.displayName !== null) {
       updateExpressions.push('#profile.#displayName = :displayName')
       expressionAttributeNames['#profile'] = 'profile'
       expressionAttributeNames['#displayName'] = 'displayName'
@@ -62,7 +55,7 @@ export const handler = async (
     }
 
     // Update bio if provided (including empty string to clear bio)
-    if (input.bio !== undefined) {
+    if (input.bio !== undefined && input.bio !== null) {
       if (input.bio.trim() === '') {
         // Remove bio field entirely if empty string provided
         updateExpressions.push('REMOVE #profile.#bio')
@@ -159,7 +152,7 @@ function validateInput(input: UpdateProfileInput): void {
   }
 
   // Validate display name if provided
-  if (input.displayName !== undefined) {
+  if (input.displayName !== undefined && input.displayName !== null) {
     if (input.displayName.trim().length === 0) {
       throw new Error('Display name cannot be empty.')
     }
@@ -182,7 +175,7 @@ function validateInput(input: UpdateProfileInput): void {
   }
 
   // Validate bio if provided (allow empty string to clear bio)
-  if (input.bio !== undefined) {
+  if (input.bio !== undefined && input.bio !== null) {
     if (input.bio.length > 500) {
       throw new Error('Bio cannot exceed 500 characters.')
     }

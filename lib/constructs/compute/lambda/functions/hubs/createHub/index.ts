@@ -1,7 +1,8 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
 import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb'
-import { Hub, CreateHubEvent, CreateHubInput } from '../../../types/hubTypes'
 import { getAuthenticatedUser } from '../../../helpers/getAuthenticatedUser'
+import { Hub, CreateHubInput } from '../../../types/generated'
+import { CreateHubEvent, CreateHubHandler } from '../../../types/events'
 
 // Initialize DynamoDB client
 const ddbClient = new DynamoDBClient({})
@@ -12,7 +13,7 @@ const HUBS_TABLE_NAME = process.env.HUBS_TABLE_NAME!
 /**
  * Lambda handler for CreateHub GraphQL mutation
  */
-export const handler = async (event: CreateHubEvent): Promise<Hub> => {
+export const handler: CreateHubHandler = async (event: CreateHubEvent): Promise<Hub> => {
   console.log('CreateHub Lambda invoked:', JSON.stringify(event, null, 2))
 
   try {
@@ -21,8 +22,7 @@ export const handler = async (event: CreateHubEvent): Promise<Hub> => {
     const { encode: geohashEncode } = ngeohash.default
 
     const input = event.arguments.input
-    const auth = getAuthenticatedUser(event, input)
-    const userId = auth.userId
+    const { userId } = getAuthenticatedUser(event)
 
     console.log('Creating hub for user:', userId)
 

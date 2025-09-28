@@ -4,8 +4,9 @@ import {
   GetCommand,
   DeleteCommand
 } from '@aws-sdk/lib-dynamodb'
-import { Hub, DeleteHubEvent } from '../../../types/hubTypes'
 import { getAuthenticatedUser } from '../../../helpers/getAuthenticatedUser'
+import { Hub } from '../../../types/generated'
+import { DeleteHubEvent, DeleteHubHandler } from '../../../types/events'
 
 // Initialize DynamoDB client
 const ddbClient = new DynamoDBClient({})
@@ -16,14 +17,12 @@ const HUBS_TABLE_NAME = process.env.HUBS_TABLE_NAME!
 /**
  * Lambda handler for DeleteHub GraphQL mutation
  */
-export const handler = async (event: DeleteHubEvent): Promise<boolean> => {
+export const handler: DeleteHubHandler = async (event: DeleteHubEvent): Promise<boolean> => {
   console.log('DeleteHub Lambda invoked:', JSON.stringify(event, null, 2))
 
   try {
     const { hubId } = event.arguments
-    const input = event.arguments
-    const auth = getAuthenticatedUser(event, input)
-    const userId = auth.userId
+    const { userId } = getAuthenticatedUser(event)
 
     // Validate input
     if (!hubId || hubId.trim().length === 0) {

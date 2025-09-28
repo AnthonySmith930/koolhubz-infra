@@ -1,7 +1,8 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
 import { DynamoDBDocumentClient, GetCommand } from '@aws-sdk/lib-dynamodb'
 import { getAuthenticatedUser } from '../../../helpers/getAuthenticatedUser'
-import { UserProfile, GetUserProfileEvent } from '../../../types/userTypes'
+import { UserProfile } from '../../../types/generated'
+import { GetUserProfileEvent, GetUserProfileHandler } from '../../../types/events'
 
 // Initialize DynamoDB client
 const ddbClient = new DynamoDBClient({})
@@ -18,29 +19,29 @@ const USERS_TABLE_NAME = process.env.USERS_TABLE_NAME!
  * Returns only the public profile information (user.profile)
  * Allows unauthenticated access to public profiles
  */
-export const handler = async (
+export const handler: GetUserProfileHandler = async (
   event: GetUserProfileEvent
 ): Promise<UserProfile | null> => {
   console.log('GetUserProfile Lambda invoked:', JSON.stringify(event, null, 2))
 
   try {
-    const { userId: targetUserId, testUserId } = event.arguments
+    const { userId: targetUserId } = event.arguments
 
     // Validate input
     if (!targetUserId) {
       throw new Error('userId is required')
     }
 
-    // Try to get requesting user, but allow failure for public profile access
+    // Authentication is not required for the method
+    // But, we may need it for accessing private profiles
     let requestingUserId: string | null = null
     let authMethod: string = 'none'
 
     try {
-      // Use auth helper - pass testUserId for API key testing
-      const auth = getAuthenticatedUser(event, { userId: testUserId })
-      requestingUserId = auth.userId
-      authMethod = auth.authMethod
+      const { userId } = getAuthenticatedUser(event)
+      requestingUserId = userId
     } catch {
+      // Catch and continue
       // Allow unauthenticated requests - checking privacy later
       console.log('Unauthenticated request for profile:', targetUserId)
     }
@@ -79,7 +80,6 @@ export const handler = async (
     const userProfile: UserProfile = {
       displayName: user.profile.displayName,
       bio: user.profile.bio,
-      friends: user.profile.friends || []
     }
 
     console.log('Profile retrieved successfully for user:', targetUserId)

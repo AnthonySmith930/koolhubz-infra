@@ -1,11 +1,7 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
 import { DynamoDBDocumentClient, QueryCommand } from '@aws-sdk/lib-dynamodb'
-import {
-  Hub,
-  HubWithDistance,
-  GetNearbyHubsInput,
-  GetNearbyHubsEvent
-} from '../../../types/hubTypes'
+import { Hub, HubType, QueryGetNearbyHubsArgs } from '../../../types/generated'
+import { GetNearbyHubsEvent, GetNearbyHubsHandler } from '../../../types/events'
 
 // Initialize DynamoDB client
 const ddbClient = new DynamoDBClient({})
@@ -16,7 +12,7 @@ const HUBS_TABLE_NAME = process.env.HUBS_TABLE_NAME!
 /**
  * Lambda handler for GetNearbyHubs GraphQL query
  */
-export const handler = async (event: GetNearbyHubsEvent): Promise<Hub[]> => {
+export const handler: GetNearbyHubsHandler = async (event: GetNearbyHubsEvent): Promise<Hub[]> => {
   console.log('GetNearbyHubs Lambda invoked:', JSON.stringify(event, null, 2))
 
   try {
@@ -63,7 +59,7 @@ export const handler = async (event: GetNearbyHubsEvent): Promise<Hub[]> => {
 
     // Query DynamoDB for each geohash prefix in parallel
     const queryPromises = searchPrefixes.map(
-      (prefix) => queryHubsByGeohash(prefix, input.hubType, limit * 2) // Fetch extra for distance filtering
+      (prefix) => queryHubsByGeohash(prefix, input.hubType ?? undefined, limit * 2) // Fetch extra for distance filtering
     )
 
     const queryResults = await Promise.all(queryPromises)
@@ -79,7 +75,7 @@ export const handler = async (event: GetNearbyHubsEvent): Promise<Hub[]> => {
     console.log(`Found ${allHubs.size} total hubs from geohash queries`)
 
     // Calculate distances and filter by radius
-    const hubsWithDistance: HubWithDistance[] = []
+    const hubsWithDistance: Array<Hub & { distance: number }> = []
 
     for (const hub of allHubs.values()) {
       const distance = geolib.getDistance(
@@ -125,12 +121,12 @@ export const handler = async (event: GetNearbyHubsEvent): Promise<Hub[]> => {
  */
 async function queryHubsByGeohash(
   geohashPrefix: string,
-  hubType?: 'PUBLIC' | 'PRIVATE',
+  hubType?: HubType,
   limit: number = 100
 ): Promise<Hub[]> {
   try {
     // Private hubs are never returned in general searches
-    if (hubType === 'PRIVATE') {
+    if (hubType === HubType.Private) {
       console.log(
         'Private hub search requested - returning empty results (not implemented)'
       )
@@ -162,7 +158,7 @@ async function queryHubsByGeohash(
 /**
  * Validate input parameters
  */
-function validateInput(input: GetNearbyHubsInput): void {
+function validateInput(input: QueryGetNearbyHubsArgs): void {
   // Validate coordinates
   if (input.latitude < -90 || input.latitude > 90) {
     throw new Error('Latitude must be between -90 and 90 degrees.')

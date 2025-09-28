@@ -1,7 +1,8 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
 import { DynamoDBDocumentClient, DeleteCommand, GetCommand } from '@aws-sdk/lib-dynamodb'
-import { RemoveMemberEvent, RemoveMemberInput } from '../../../types/membershipTypes'
 import { getAuthenticatedUser } from '../../../helpers/getAuthenticatedUser'
+import { RemoveMemberInput } from '../../../types/generated'
+import { RemoveMemberEvent, RemoveMemberHandler } from '../../../types/events'
 
 // Initialize DynamoDB client
 const ddbClient = new DynamoDBClient({})
@@ -16,17 +17,17 @@ const MEMBERSHIPS_TABLE_NAME = process.env.MEMBERSHIPS_TABLE_NAME!
 /**
  * Lambda handler for removeMembership GraphQL mutation
  */
-export const handler = async (event: RemoveMemberEvent): Promise<boolean> => {
+export const handler: RemoveMemberHandler = async (event: RemoveMemberEvent): Promise<boolean> => {
   console.log('RemoveMember Lambda invoked:', JSON.stringify(event, null, 2))
 
   try {
     const input = event.arguments.input
-    const auth = getAuthenticatedUser(event, input)
-    const userId = auth.userId
-
-    console.log(`Removing user ${userId} from hub ${input.hubId}`)
+    const { userId } = getAuthenticatedUser(event)
 
     validateInput(input)
+    
+    console.log(`Removing user ${userId} from hub ${input.hubId}`)
+
 
     // Check if membership exists
     await validateMembershipExists(input.hubId, userId)

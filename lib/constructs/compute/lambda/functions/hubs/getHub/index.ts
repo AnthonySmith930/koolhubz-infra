@@ -1,6 +1,7 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
 import { DynamoDBDocumentClient, GetCommand } from '@aws-sdk/lib-dynamodb'
-import { Hub, GetHubEvent } from '../../../types/hubTypes'
+import { Hub } from '../../../types/generated'
+import { GetHubEvent, GetHubHandler } from '../../../types/events'
 
 // Initialize DynamoDB client
 const ddbClient = new DynamoDBClient({})
@@ -11,11 +12,12 @@ const HUBS_TABLE_NAME = process.env.HUBS_TABLE_NAME!
 /**
  * Lambda handler for GetHub GraphQL query
  */
-export const handler = async (event: GetHubEvent): Promise<Hub | null> => {
+export const handler: GetHubHandler = async (event: GetHubEvent): Promise<Hub | null> => {
   console.log('GetHub Lambda invoked:', JSON.stringify(event, null, 2))
 
   try {
     const { hubId } = event.arguments
+    // Used only for private hub access
     const userId = event.identity?.sub
 
     // Validate input
