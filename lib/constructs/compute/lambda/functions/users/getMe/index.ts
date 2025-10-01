@@ -39,8 +39,8 @@ export const handler: GetMeHandler = async (event: GetMeEvent): Promise<User | n
 
     if (!result.Item) {
       console.log('User not found:', userId)
-      // This shouldn't happen if user was authenticated, but handle gracefully
-      throw new Error('User profile not found. Please contact support.')
+      // return null for user's who haven't created accounts yet.
+      return null
     }
 
     const user = result.Item as User

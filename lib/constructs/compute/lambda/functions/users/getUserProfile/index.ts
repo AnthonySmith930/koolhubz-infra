@@ -2,7 +2,10 @@ import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
 import { DynamoDBDocumentClient, GetCommand } from '@aws-sdk/lib-dynamodb'
 import { getAuthenticatedUser } from '../../../helpers/getAuthenticatedUser'
 import { UserProfile } from '../../../types/generated'
-import { GetUserProfileEvent, GetUserProfileHandler } from '../../../types/events'
+import {
+  GetUserProfileEvent,
+  GetUserProfileHandler
+} from '../../../types/events'
 
 // Initialize DynamoDB client
 const ddbClient = new DynamoDBClient({})
@@ -79,7 +82,7 @@ export const handler: GetUserProfileHandler = async (
     // Return only the profile data
     const userProfile: UserProfile = {
       displayName: user.profile.displayName,
-      bio: user.profile.bio,
+      bio: user.profile.bio
     }
 
     console.log('Profile retrieved successfully for user:', targetUserId)
