@@ -19,12 +19,14 @@ type Hub {
   isActive: Boolean!
   memberCount: Int!
   geohash: String!
+  polygon: String!
+  color: String!
+
   
   # Will implement later:
   # markers: [HubMarker]
   # inviteCode: String
   # qrCode: String
-  # polygon: String
 }
 
 enum HubType {
@@ -39,6 +41,8 @@ input CreateHubInput {
   longitude: Float!
   radius: Int!
   hubType: HubType!
+  polygon: String!
+  color: String!
 }
 
 # User Types ---------------------------------------------

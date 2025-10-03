@@ -52,7 +52,9 @@ export const handler: CreateHubHandler = async (event: CreateHubEvent): Promise<
       createdAt: now,
       updatedAt: now,
       isActive: true,
-      geohash
+      geohash,
+      polygon: input.polygon,
+      color: input.color
     }
 
     // Save to DynamoDB

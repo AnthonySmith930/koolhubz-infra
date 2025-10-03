@@ -9,6 +9,7 @@
     "watch": "tsc -w",
     "codegen": "graphql-codegen --config codegen.config.ts",
     "codegen:watch": "graphql-codegen --config codegen.config.ts --watch",
+    "diff": "tsc && cdk diff Dev/KoolHubzStack",
     "lint": "ESLINT_USE_FLAT_CONFIG=true eslint \"./lib/**/*.ts\" \"./bin/**/*.ts\"",
     "lint:fix": "ESLINT_USE_FLAT_CONFIG=true eslint \"./lib/**/*.ts\" \"./bin/**/*.ts\"  --fix",
     "lint:tests": "ESLINT_USE_FLAT_CONFIG=true eslint \"./test/**/*.ts\"",

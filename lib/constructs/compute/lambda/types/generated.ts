@@ -27,11 +27,13 @@ export type AddMemberInput = {
 };
 
 export type CreateHubInput = {
+  color: Scalars['String']['input'];
   description: Scalars['String']['input'];
   hubType: HubType | '%future added value';
   latitude: Scalars['Float']['input'];
   longitude: Scalars['Float']['input'];
   name: Scalars['String']['input'];
+  polygon: Scalars['String']['input'];
   radius: Scalars['Int']['input'];
 };
 
@@ -48,6 +50,7 @@ export type FavoriteHub = {
 
 export type Hub = {
   __typename?: 'Hub';
+  color: Scalars['String']['output'];
   createdAt: Scalars['AWSDateTime']['output'];
   createdBy: Scalars['ID']['output'];
   description: Scalars['String']['output'];
@@ -59,6 +62,7 @@ export type Hub = {
   longitude: Scalars['Float']['output'];
   memberCount: Scalars['Int']['output'];
   name: Scalars['String']['output'];
+  polygon: Scalars['String']['output'];
   radius: Scalars['Int']['output'];
   updatedAt: Scalars['AWSDateTime']['output'];
 };
@@ -367,6 +371,7 @@ export type FavoriteHubResolvers<ContextType = AppSyncContext, ParentType extend
 };
 
 export type HubResolvers<ContextType = AppSyncContext, ParentType extends ResolversParentTypes['Hub'] = ResolversParentTypes['Hub']> = {
+  color?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['AWSDateTime'], ParentType, ContextType>;
   createdBy?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -378,6 +383,7 @@ export type HubResolvers<ContextType = AppSyncContext, ParentType extends Resolv
   longitude?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   memberCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  polygon?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   radius?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['AWSDateTime'], ParentType, ContextType>;
 };
